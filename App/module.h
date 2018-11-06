@@ -4,10 +4,10 @@
  * Connects all other nested sub modules together
  * Defines GPIO ports mapping, events and action calls routing
  */
-#include "config.example.h"
+#include "config.controller.C8145.h"
 #include "System/module.h"
 #include "MIDI/module.h"
-#include "Example/module.h"
+#include "Controller/module.h"
 
 /*
  * Application start up once, before main loop
@@ -45,15 +45,18 @@
 
 #define App_System_Timer_10msProcessEvent() {\
     System_Led_TimersProcess();\
+    Controller_Timer10msProcess();\
 }
 
 #define App_System_Timer_100msProcessEvent() {\
+    Controller_Timer100msProcess();\
 }
 
 /*
  * Analog inputs events
  */
 #define App_System_ADC_ValueChangeEvent(chn, val) {\
+    Controller_Mode_ADCAction(chn, val);\
 }
 
 /*
@@ -61,8 +64,20 @@
  * Example module use Key actions
  */
 #define App_System_Key_ScanEvent() {\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, Example_KeyDownAction, Example_KeyUpAction);\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, Example_KeyDownAction, Example_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 2, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 3, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 4, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort2In, system.key.states, 5, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 6, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 7, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 8, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 9, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 10, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 11, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 12, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPort3In, system.key.states2, 13, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
 }
 
 /*

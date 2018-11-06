@@ -11,12 +11,12 @@
 
 struct SYSTEM_MODULE system;
 struct MIDI_MODULE midi;
-
+struct CONTROLLER_MODULE controller;
 
 /*
  * System_Timer_0 interrupt vector
  */
-ISR(TIMER0_OVF_vect){
+ISR(TIMER0_OVF_vect) {
 	System_Timer_0_OVF_InterruptVector();
 }
 

@@ -28,33 +28,6 @@ ISR (USART_RXC_vect) {
 }
 
 /*
- * Add 3 bytes to TX buffer
- */
-void System_USART_Send3Bytes(BYTE b1, BYTE b2, BYTE b3) {
-	if ((system.usart.txBufferLevel + 3) < USART_CFG_TX_BUFFER_SIZE) {
-		cli();
-		system.usart.txBuffer[system.usart.txBufferLevel] = b1;
-		system.usart.txBuffer[system.usart.txBufferLevel + 1] = b2;
-		system.usart.txBuffer[system.usart.txBufferLevel + 2] = b3;
-		system.usart.txBufferLevel += 3;
-		sei();
-	}
-}
-
-/*
- * Add 2 bytes to TX buffer
- */
-void System_USART_Send2Bytes(BYTE b1, BYTE b2) {
-	if ((system.usart.txBufferLevel + 2) < USART_CFG_TX_BUFFER_SIZE) {
-		cli();
-		system.usart.txBuffer[system.usart.txBufferLevel] = b1;
-		system.usart.txBuffer[system.usart.txBufferLevel + 1] = b2;
-		system.usart.txBufferLevel += 2;
-		sei();
-	}
-}
-
-/*
  * main
  */
 int main() {

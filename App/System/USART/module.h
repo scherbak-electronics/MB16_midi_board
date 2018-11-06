@@ -105,3 +105,31 @@ struct SYSTEM_USART_MODULE {
 		System_USART_setFlagRxError();\
 	}\
 }
+
+/*
+ * Add 3 bytes to TX buffer
+ */
+#define System_USART_Send3Bytes(b1, b2, b3) {\
+	if ((system.usart.txBufferLevel + 3) < USART_CFG_TX_BUFFER_SIZE) {\
+		cli();\
+		system.usart.txBuffer[system.usart.txBufferLevel] = b1;\
+		system.usart.txBuffer[system.usart.txBufferLevel + 1] = b2;\
+		system.usart.txBuffer[system.usart.txBufferLevel + 2] = b3;\
+		system.usart.txBufferLevel += 3;\
+		sei();\
+	}\
+}
+
+/*
+ * Add 2 bytes to TX buffer
+ */
+#define System_USART_Send2Bytes(b1, b2) {\
+	if ((system.usart.txBufferLevel + 2) < USART_CFG_TX_BUFFER_SIZE) {\
+		cli();\
+		system.usart.txBuffer[system.usart.txBufferLevel] = b1;\
+		system.usart.txBuffer[system.usart.txBufferLevel + 1] = b2;\
+		system.usart.txBufferLevel += 2;\
+		sei();\
+	}\
+}
+

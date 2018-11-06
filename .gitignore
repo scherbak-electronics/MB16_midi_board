@@ -1,0 +1,8 @@
+.DS_Store
+*.o
+*.hex
+*.elf
+*.doc
+/docs
+midi-notes-numbers.txt
+.vscode

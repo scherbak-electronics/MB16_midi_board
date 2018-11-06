@@ -16,6 +16,7 @@
     cli();\
   	System_Init();\
   	MIDI_Init();\
+    Controller_Init();\
 	sei();\
 	ADC_startConversion();\
 }
@@ -29,6 +30,7 @@
     System_Key_ScanFlagObserverProcess();\
     System_USART_RxProcess();\
     MIDI_EventsProcess();\
+    Controller_Process();\
     System_USART_TxProcess();\
 }
 

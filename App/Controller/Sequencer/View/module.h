@@ -11,6 +11,7 @@ struct SEQUENCER_VIEW_MODULE {
     BYTE flags;
     BYTE firstVisibleStep;
     BYTE cursorPosition;
+    BYTE prevCursorPosition;
     BYTE cursorTimer;
 };
 
@@ -26,6 +27,7 @@ struct SEQUENCER_VIEW_MODULE {
 #define Controller_Sequencer_View_Init() {\
     controller.sequencer.view.flags = 0;\
     controller.sequencer.view.cursorPosition = 0;\
+    controller.sequencer.view.prevCursorPosition = 0;\
     controller.sequencer.view.firstVisibleStep = 0;\
     controller.sequencer.view.cursorTimer = 0;\
 }
@@ -104,19 +106,22 @@ struct SEQUENCER_VIEW_MODULE {
  * and moves visible area if needed. 
  */
 #define Controller_Sequencer_View_MoveCursor(pos) {\
-    Controller_Sequencer_View_HideCursor();\
-    if (pos < controller.sequencer.view.firstVisibleStep) {\
-        Controller_Sequencer_View_MoveVisibleArea(pos);\
-        Controller_Sequencer_View_ShowPatternContentFromStep(pos);\
-    } else {\
-        if (pos >= (controller.sequencer.view.firstVisibleStep + CONTROLLER_SEQUENCER_VIEW_CFG_VISIBLE_AREA_LEN)) {\
-            Controller_Sequencer_View_MoveVisibleArea(pos - (CONTROLLER_SEQUENCER_VIEW_CFG_VISIBLE_AREA_LEN - 1));\
-            Controller_Sequencer_View_ShowPatternContentFromStep(pos - (CONTROLLER_SEQUENCER_VIEW_CFG_VISIBLE_AREA_LEN - 1));\
+    if (pos != controller.sequencer.view.prevCursorPosition) {\
+        controller.sequencer.view.prevCursorPosition = pos;\
+        Controller_Sequencer_View_HideCursor();\
+        if (pos < controller.sequencer.view.firstVisibleStep) {\
+            Controller_Sequencer_View_MoveVisibleArea(pos);\
+            Controller_Sequencer_View_ShowPatternContentFromStep(pos);\
         } else {\
-            Controller_Sequencer_View_ShowPatternContentFromStep(controller.sequencer.view.firstVisibleStep);\
+            if (pos >= (controller.sequencer.view.firstVisibleStep + CONTROLLER_SEQUENCER_VIEW_CFG_VISIBLE_AREA_LEN)) {\
+                Controller_Sequencer_View_MoveVisibleArea(pos - (CONTROLLER_SEQUENCER_VIEW_CFG_VISIBLE_AREA_LEN - 1));\
+                Controller_Sequencer_View_ShowPatternContentFromStep(pos - (CONTROLLER_SEQUENCER_VIEW_CFG_VISIBLE_AREA_LEN - 1));\
+            } else {\
+                Controller_Sequencer_View_ShowPatternContentFromStep(controller.sequencer.view.firstVisibleStep);\
+            }\
         }\
+        Controller_Sequencer_View_ShowCursor(pos);\
     }\
-    Controller_Sequencer_View_ShowCursor(pos);\
 }
 
 /*

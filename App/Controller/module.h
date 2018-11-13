@@ -56,10 +56,10 @@ struct CONTROLLER_MODULE {
  */
 #define Controller_Timer100msProcess() {\
     Controller_View_Process();\
+    Controller_Sequencer_View_Process();\
 }
 
 #define Controller_Timer10msProcess() {\
     Controller_Sequencer_BPMTimerProcess();\
     Controller_Notes_Process();\
-    Controller_Sequencer_View_Process();\
 }

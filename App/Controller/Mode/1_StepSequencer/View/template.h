@@ -10,7 +10,7 @@
  * Displaing current selected pattern positions.
  */
 #define Controller_Mode_1_View_Show() {\
-    Controller_Sequencer_View_MoveCursor(Controller_Sequencer_GetEditPatternStepNumber());\
+    Controller_Sequencer_View_Show();\
 }
 
 /* 

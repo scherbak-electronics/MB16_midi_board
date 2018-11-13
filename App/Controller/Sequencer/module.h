@@ -9,6 +9,7 @@
 #define CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER          0
 #define CONTROLLER_SEQUENCER_FLAG_PLAY_PATTERN          1
 #define CONTROLLER_SEQUENCER_FLAG_REC                   2
+#define CONTROLLER_SEQUENCER_FLAG_OVERDUB               3
 
 #define CONTROLLER_SEQUENCER_CFG_PATTERN_LEN            16
 #define CONTROLLER_SEQUENCER_CFG_PATTERS_COUNT          4
@@ -25,7 +26,8 @@ struct SEQUENCER_MODULE {
     struct PATTERN_STEP_DATA patterns[CONTROLLER_SEQUENCER_CFG_PATTERS_COUNT][CONTROLLER_SEQUENCER_CFG_PATTERN_LEN];
     BYTE playStepNumber;
     BYTE editPatternNumber;
-    BYTE editPatternStepNumber;
+    BYTE editStepNumber;
+    BYTE editStepNumberPrev;
     BYTE structureNumber;
     struct SEQUENCER_VIEW_MODULE view;
     BYTE tempo;
@@ -44,15 +46,24 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_clrRecFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_REC)
 #define Controller_Sequencer_isRecFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_REC)
 
+#define Controller_Sequencer_setOverdubFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
+#define Controller_Sequencer_clrOverdubFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
+#define Controller_Sequencer_isOverdubFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
+#define Controller_Sequencer_invOverdubFlag()                                    inv_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
+
+
 #define Controller_Sequencer_SetEditPatternNumber(num)                      controller.sequencer.editPatternNumber = num
 #define Controller_Sequencer_GetEditPatternNumber()                         controller.sequencer.editPatternNumber
-#define Controller_Sequencer_SetEditPatternStepNumber(num)                  controller.sequencer.editPatternStepNumber = num
-#define Controller_Sequencer_GetEditPatternStepNumber()                     controller.sequencer.editPatternStepNumber
+#define Controller_Sequencer_SetEditStepNumber(num)                         controller.sequencer.editStepNumber = num
+#define Controller_Sequencer_GetEditStepNumber()                            controller.sequencer.editStepNumber
+#define Controller_Sequencer_IsEditStepNumberChanged()                      (controller.sequencer.editStepNumber != controller.sequencer.editStepNumberPrev)
+#define Controller_Sequencer_RenewPreviousEditStepNumber(num)               controller.sequencer.editStepNumberPrev = controller.sequencer.editStepNumber
 
-#define Controller_Sequencer_SetPatternStepNoteNumber(patt, pos, noteNum)   controller.sequencer.patterns[patt][pos].noteNumber = noteNum
-#define Controller_Sequencer_SetPatternStepVelocity(patt, pos, velo)        controller.sequencer.patterns[patt][pos].velocity = velo
-#define Controller_Sequencer_SetPatternStepGateTime(patt, pos, gate)        controller.sequencer.patterns[patt][pos].gateTime = gate
+#define Controller_Sequencer_SetStepNoteNumber(patt, pos, noteNum)          controller.sequencer.patterns[patt][pos].noteNumber = noteNum
+#define Controller_Sequencer_SetStepVelocity(patt, pos, velo)               controller.sequencer.patterns[patt][pos].velocity = velo
+#define Controller_Sequencer_SetStepGateTime(patt, pos, gate)               controller.sequencer.patterns[patt][pos].gateTime = gate
 #define Controller_Sequencer_SetTempo(temp)                                 controller.sequencer.tempo = temp
+#define Controller_Sequencer_GetCurrentEditStep(stepNum)                    controller.sequencer.patterns[controller.sequencer.editPatternNumber][stepNum]
 
 
 /*
@@ -63,7 +74,8 @@ struct SEQUENCER_MODULE {
     controller.sequencer.structureNumber = 0;\
     controller.sequencer.playStepNumber = 0;\
     controller.sequencer.editPatternNumber = 0;\
-    controller.sequencer.editPatternStepNumber = 0;\
+    controller.sequencer.editStepNumber = 0;\
+    controller.sequencer.editStepNumberPrev = 0;\
     controller.sequencer.tempo = CONTROLLER_SEQUENCER_CFG_DEFAULT_TEMPO;\
     controller.sequencer.bpmTimer = controller.sequencer.tempo;\
     system.var = 0;\
@@ -110,7 +122,14 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_PlayProcess() {\
     if (Controller_Sequencer_isPlayPatternFlag() && Controller_Sequencer_isStepTriggerFlag()) {\
         Controller_Sequencer_clrStepTriggerFlag();\
-        Controller_Sequencer_PlayPatternPosition(0, controller.sequencer.playStepNumber);\
+        Controller_Sequencer_PlayStep(\
+            controller.sequencer.editPatternNumber,\
+            controller.sequencer.playStepNumber\
+        );\
+        if (Controller_Sequencer_isOverdubFlag()) {\
+            Controller_Sequencer_SetEditStepNumber(controller.sequencer.playStepNumber);\
+            Controller_Sequencer_View_Show();\
+        }\
         if (controller.sequencer.playStepNumber < CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1) {\
             controller.sequencer.playStepNumber++;\
         } else {\
@@ -120,12 +139,25 @@ struct SEQUENCER_MODULE {
 }
 
 /*
- * Play pattern position by pattern number and position number.
+ * Play pattern step by pattern number and step number.
  */
-#define Controller_Sequencer_PlayPatternPosition(patt, pos) {\
-    if (controller.sequencer.patterns[patt][pos].noteNumber != CONTROLLER_NOTES_CFG_NOTE_OFF) {\
-        controller.mode.mode1.lastNoteNumber = controller.sequencer.patterns[patt][pos].noteNumber;\
-        Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.sequencer.patterns[patt][pos].velocity, controller.sequencer.patterns[patt][pos].gateTime);\
+#define Controller_Sequencer_PlayStep(patt, stepNum) {\
+    if (controller.sequencer.patterns[patt][stepNum].noteNumber != CONTROLLER_NOTES_CFG_NOTE_OFF) {\
+        controller.mode.mode1.lastNoteNumber = controller.sequencer.patterns[patt][stepNum].noteNumber;\
+        Controller_Notes_On(\
+            controller.mode.mode1.lastNoteNumber,\
+            controller.sequencer.patterns[patt][stepNum].velocity,\
+            controller.sequencer.patterns[patt][stepNum].gateTime\
+        );\
+    }\
+}
+
+/*
+ * Select sequencer structure 
+ */
+#define Controller_Sequencer_SelectStructure(structNum) {\
+    controller.sequencer.structureNumber = structNum;\
+    if (controller.sequencer.structureNumber) {\
     }\
 }
 
@@ -155,4 +187,11 @@ struct SEQUENCER_MODULE {
     if (Controller_Sequencer_isPlayPatternFlag()) {\
         Controller_Sequencer_clrPlayPatternFlag();\
     }\
+}
+
+
+#define Controller_Sequencer_ClearStepData(patt, pos) {\
+    controller.sequencer.patterns[patt][pos].noteNumber = CONTROLLER_NOTES_CFG_NOTE_OFF;\
+    controller.sequencer.patterns[patt][pos].velocity = 0;\
+    controller.sequencer.patterns[patt][pos].gateTime = 1;\
 }

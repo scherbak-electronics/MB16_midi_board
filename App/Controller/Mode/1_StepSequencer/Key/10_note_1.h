@@ -15,7 +15,7 @@
     if (Controller_Sequencer_isRecFlag()) {\
         Controller_Sequencer_SetPatternStepData(\
             Controller_Sequencer_GetEditPatternNumber(), \
-            Controller_Sequencer_GetEditPatternStepNumber(), \
+            Controller_Sequencer_GetEditStepNumber(), \
             controller.mode.mode1.lastNoteNumber, \
             controller.notes.velocity, \
             controller.notes.gateTime\

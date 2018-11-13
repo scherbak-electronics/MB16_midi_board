@@ -7,22 +7,24 @@
  *          Buffer:              Port:
  *                    _Red              _Red
  *                   |                 |
- *            0b...GGGGR           0bGGGGR...
+ *          0b...GGGGR           0bGGGGR...
  *            xxx43210             76543xxx
  *               ||||_Green        ||||____Green
  *               |||__Green        |||_____Green
  *               ||___Green        ||______Green
  *               |____Green        |_______Green
  */
-#define CONTROLLER_VIEW_FLAG_START_BLINKING         0
+#define CONTROLLER_VIEW_FLAG_START_BLINKING             0
 
-#define CONTROLLER_VIEW_CFG_DISPLAYS_NUMBER         1
-#define CONTROLLER_VIEW_CFG_SHOW_PARAM_TIME         20
-#define CONTROLLER_VIEW_CFG_BLINK_TIME              2
+#define CONTROLLER_VIEW_CFG_DISPLAYS_NUMBER             1
+#define CONTROLLER_VIEW_CFG_SHOW_PARAM_TIME             20
+#define CONTROLLER_VIEW_CFG_BLINK_TIME                  2
+#define CONTROLLER_VIEW_CFG_GREEN_LEDS_BITNUM_OFFSET    4
 
-#define CONTROLLER_VIEW_BITMASK_LEDS                0b11111000
-#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS          0b11110000
-#define CONTROLLER_VIEW_BITMASK_RED_LED             0b00001000
+#define CONTROLLER_VIEW_BITMASK_LEDS                    0b11111000
+#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS              0b11110000
+#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS_NOT          0b00001111
+#define CONTROLLER_VIEW_BITMASK_RED_LED                 0b00001000
 
 struct VIEW_MODULE {
     BYTE flags;
@@ -127,6 +129,12 @@ struct VIEW_MODULE {
 #define Controller_View_CleanGreenBuffer() controller.view.ledsBuffer = controller.view.ledsBuffer & 0b00000001
 
 /*
+ * Clean only green leds buffer.
+ */
+#define Controller_View_CleanGreenPort() systemLedPortOut &= CONTROLLER_VIEW_BITMASK_GREEN_LEDS_NOT
+
+
+/*
  * Set leds buffer bit.
  * bitNum should be Right aligned.
  * 
@@ -144,33 +152,37 @@ struct VIEW_MODULE {
 
 /*
  * Set green leds port bit.
- * bitNum should be Right aligned.
+ * ledNum should be Right aligned. Will be converted to 
+ * actual port bit number by adding offset.
+ *
+ *     0b....GGGG -> 0bGGGG....
  */
-#define Controller_View_SetLedsPortGreenBit(bitNum) set_bit(systemLedPortOut, bitNum + 4)
+#define Controller_View_SetGreenLedsPortBit(ledNum) set_bit(systemLedPortOut, (ledNum + CONTROLLER_VIEW_CFG_GREEN_LEDS_BITNUM_OFFSET))
 
 /*
  * Clear green leds port bit.
- * bitNum should be Right aligned.
+ * ledNum should be Right aligned. Will be converted to 
+ * actual port bit number by adding offset.
  * 
- *     0b....GGGG
+ *     0b....GGGG -> 0bGGGG....
  */
-#define Controller_View_ClearLedsPortGreenBit(bitNum) clr_bit(systemLedPortOut, bitNum + 4)
+#define Controller_View_ClearGreenLedsPortBit(ledNum) clr_bit(systemLedPortOut, (ledNum + CONTROLLER_VIEW_CFG_GREEN_LEDS_BITNUM_OFFSET))
 
 /*
  * Invert green leds port bit.
  * bitNum should be Right aligned.
  * 
- *     0b....GGGG
+ *     0b....GGGG -> 0bGGGG....
  */
-#define Controller_View_InvLedsPortGreenBit(bitNum) inv_bit(systemLedPortOut, bitNum + 4)
+#define Controller_View_InvGreenLedsPortBit(ledNum) inv_bit(systemLedPortOut, (ledNum + CONTROLLER_VIEW_CFG_GREEN_LEDS_BITNUM_OFFSET))
 
 /*
  * Get is green leds port bit set, returns true if set.
  * bitNum should be Right aligned.
  * 
- *     0b....GGGG
+ *     0b....GGGG -> 0bGGGG....
  */
-#define Controller_View_IsSetLedsPortGreenBit(bitNum) bit_is_set(systemLedPortOut, bitNum + 4)
+#define Controller_View_IsSetGreenLedsPortBit(bitNum) bit_is_set(systemLedPortOut, bitNum + 4)
 
 /*
  * Write out leds buffer to the port.

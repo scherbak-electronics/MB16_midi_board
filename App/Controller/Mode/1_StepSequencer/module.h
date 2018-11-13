@@ -1,6 +1,7 @@
 /*
  * Controller_Mode_1 module
  * 
+ * Mode 1 specific data and logic.
  * Step Sequencer Mode with grain note triggering
  * Provides logic of interaction between all other modules.
  */

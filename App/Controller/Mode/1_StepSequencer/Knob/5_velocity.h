@@ -24,13 +24,13 @@
             }\
             break;\
         }\
-    }\
-    if (Controller_Sequencer_isRecFlag()) {\
-        Controller_Sequencer_SetPatternStepVelocity(\
-            Controller_Sequencer_GetEditPatternNumber(), \
-            controller.sequencer.editPatternStepNumber, \
-            controller.notes.velocity \
-        );\
+        if (Controller_Sequencer_isRecFlag()) {\
+            Controller_Sequencer_SetStepVelocity(\
+                Controller_Sequencer_GetEditPatternNumber(),\
+                Controller_Sequencer_GetEditStepNumber(),\
+                controller.notes.velocity\
+            );\
+        }\
     }\
 }
 

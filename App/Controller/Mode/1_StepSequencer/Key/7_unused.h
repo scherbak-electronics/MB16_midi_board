@@ -7,10 +7,12 @@
  * Key unused.
  */
 #define Controller_Mode_1_Key_7_DownAction() {\
+    Controller_Sequencer_setOverdubFlag();\
 }
 
 /*
  * Key unused.
  */
 #define Controller_Mode_1_Key_7_UpAction() {\
+    Controller_Sequencer_clrOverdubFlag();\
 }

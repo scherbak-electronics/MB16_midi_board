@@ -43,12 +43,10 @@
         controller.mode.mode1.keyNote[3].number = controller.mode.mode1.lastNoteNumber;\
     }\
     if (Controller_Sequencer_isRecFlag()) {\
-        Controller_Sequencer_SetPatternStepData(\
+        Controller_Sequencer_SetStepNoteNumber(\
             Controller_Sequencer_GetEditPatternNumber(), \
-            Controller_Sequencer_GetEditPatternStepNumber(), \
-            controller.mode.mode1.lastNoteNumber, \
-            controller.notes.velocity, \
-            controller.notes.gateTime\
+            Controller_Sequencer_GetEditStepNumber(), \
+            controller.mode.mode1.lastNoteNumber\
         );\
     }\
 }

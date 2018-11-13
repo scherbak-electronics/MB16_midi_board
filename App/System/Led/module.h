@@ -2,8 +2,10 @@
  * status LEDs module
  */
 #define SYSTEM_LED_CFG_BLINK_TIME           4
+#define SYSTEM_LED_FLAG_BLINK_DISABLED      0
 
 struct SYSTEM_LED_MODULE {
+    BYTE flags;
     BYTE blinkTimer;
 };
 
@@ -13,6 +15,7 @@ struct SYSTEM_LED_MODULE {
 #define System_Led_Init() {\
     System_Led_Off(0);\
     system.led.blinkTimer = 0;\
+    system.led.flags = 0;\
 }
 
 /*
@@ -38,6 +41,8 @@ struct SYSTEM_LED_MODULE {
  * Blink Led to show activity
  */
 #define System_Led_Blink(ledNum) {\
-	System_Led_On(ledNum);\
-	system.led.blinkTimer = SYSTEM_LED_CFG_BLINK_TIME;\
+    if (!bit_is_set(system.led.flags, SYSTEM_LED_FLAG_BLINK_DISABLED)) {\
+        System_Led_On(ledNum);\
+	    system.led.blinkTimer = SYSTEM_LED_CFG_BLINK_TIME;\
+    }\
 }

@@ -56,7 +56,7 @@ struct SYSTEM_USART_MODULE {
 			if(USART_isTxDataRegEmpty()){\
 				usartDataReg = system.usart.txBuffer[system.usart.txBufferPointer];\
 				/* Set TX LED active */\
-                System_Led_Blink(0);\
+                /*System_Led_Blink(0);*/\
 				if(system.usart.txBufferPointer == system.usart.txBufferLevel - 1){\
 					system.usart.txBufferPointer = 0;\
 					system.usart.txBufferLevel = 0;\

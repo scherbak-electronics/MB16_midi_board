@@ -14,6 +14,7 @@
 #include "Program/module.h"
 #include "Mode/module.h"
 #include "View/module.h"
+#include "Sync/module.h"
 
 #define CONTROLLER_CFG_DEFAULT_VELOCITY     64 
 
@@ -27,6 +28,7 @@ struct CONTROLLER_MODULE {
     struct NOTES_MODULE notes;
     struct PROGRAM_CHANGE_MODULE program;
     struct VIEW_MODULE view;
+    struct SYNC_MODULE sync;
 };
 
 /*
@@ -40,6 +42,7 @@ struct CONTROLLER_MODULE {
     Controller_Sequencer_Init();\
     Controller_Program_Init();\
     Controller_Notes_Init();\
+    Controller_Sync_Init();\
 }
 
 /*
@@ -48,6 +51,7 @@ struct CONTROLLER_MODULE {
 #define Controller_Process() {\
     Controller_Key_Process();\
     Controller_Mode_Process();\
+    Controller_Sync_Process();\
     Controller_Sequencer_Process();\
 }
 
@@ -60,6 +64,10 @@ struct CONTROLLER_MODULE {
 }
 
 #define Controller_Timer10msProcess() {\
-    Controller_Sequencer_BPMTimerProcess();\
     Controller_Notes_Process();\
+    Controller_Sync_ExtTrigTimeoutProcess();\
+}
+
+#define Controller_Timer1msProcess() {\
+    Controller_Sync_Trig96TimerProcess();\
 }

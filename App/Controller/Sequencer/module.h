@@ -7,7 +7,7 @@
 #include "View/module.h"
 
 #define CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER          0
-#define CONTROLLER_SEQUENCER_FLAG_PLAY_PATTERN          1
+#define CONTROLLER_SEQUENCER_FLAG_PLAY          1
 #define CONTROLLER_SEQUENCER_FLAG_REC                   2
 #define CONTROLLER_SEQUENCER_FLAG_OVERDUB               3
 
@@ -32,15 +32,17 @@ struct SEQUENCER_MODULE {
     struct SEQUENCER_VIEW_MODULE view;
     BYTE tempo;
     BYTE bpmTimer;
+    BYTE gateTime;
+    BYTE programNumber;
 };
 
 #define Controller_Sequencer_setStepTriggerFlag()                           set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER)
 #define Controller_Sequencer_clrStepTriggerFlag()                           clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER)
 #define Controller_Sequencer_isStepTriggerFlag()                            bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER)
 
-#define Controller_Sequencer_setPlayPatternFlag()                           set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_PLAY_PATTERN)
-#define Controller_Sequencer_clrPlayPatternFlag()                           clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_PLAY_PATTERN)
-#define Controller_Sequencer_isPlayPatternFlag()                            bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_PLAY_PATTERN)
+#define Controller_Sequencer_setPlayingFlag()                           set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_PLAY)
+#define Controller_Sequencer_clrPlayingFlag()                           clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_PLAY)
+#define Controller_Sequencer_isPlayingFlag()                            bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_PLAY)
 
 #define Controller_Sequencer_setRecFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_REC)
 #define Controller_Sequencer_clrRecFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_REC)
@@ -62,7 +64,8 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_SetStepNoteNumber(patt, pos, noteNum)          controller.sequencer.patterns[patt][pos].noteNumber = noteNum
 #define Controller_Sequencer_SetStepVelocity(patt, pos, velo)               controller.sequencer.patterns[patt][pos].velocity = velo
 #define Controller_Sequencer_SetStepGateTime(patt, pos, gate)               controller.sequencer.patterns[patt][pos].gateTime = gate
-#define Controller_Sequencer_SetTempo(temp)                                 controller.sequencer.tempo = temp
+//#define Controller_Sequencer_SetTempo(temp)                                 controller.sequencer.tempo = temp
+#define Controller_Sequencer_SetTempo(temp)                                 Controller_Sync_SetTempo(temp)
 #define Controller_Sequencer_GetCurrentEditStep(stepNum)                    controller.sequencer.patterns[controller.sequencer.editPatternNumber][stepNum]
 
 
@@ -78,6 +81,8 @@ struct SEQUENCER_MODULE {
     controller.sequencer.editStepNumberPrev = 0;\
     controller.sequencer.tempo = CONTROLLER_SEQUENCER_CFG_DEFAULT_TEMPO;\
     controller.sequencer.bpmTimer = controller.sequencer.tempo;\
+    controller.sequencer.gateTime = 1;\
+    controller.sequencer.programNumber = 0;\
     system.var = 0;\
     for (; system.var < CONTROLLER_SEQUENCER_CFG_PATTERN_LEN; system.var++) {\
         controller.sequencer.patterns[0][system.var].noteNumber = CONTROLLER_NOTES_CFG_NOTE_OFF;\
@@ -117,10 +122,30 @@ struct SEQUENCER_MODULE {
 }
 
 /*
+ * Start sequencer playback.
+ */
+#define Controller_Sequencer_StartPlayback() {\
+    if (!Controller_Sequencer_isPlayingFlag()) {\
+        controller.sequencer.playStepNumber = 0;\
+        Controller_Sequencer_setPlayingFlag();\
+    }\
+}
+
+/*
+ * Stop sequencer.
+ */
+#define Controller_Sequencer_StopPlayback() {\
+    if (Controller_Sequencer_isPlayingFlag()) {\
+        Controller_Sequencer_clrPlayingFlag();\
+    }\
+}
+
+/*
  * Play pattern positions Process.
  */
 #define Controller_Sequencer_PlayProcess() {\
-    if (Controller_Sequencer_isPlayPatternFlag() && Controller_Sequencer_isStepTriggerFlag()) {\
+    if (Controller_Sequencer_isPlayingFlag() && Controller_Sequencer_isStepTriggerFlag()) {\
+        System_Led_Blink(0);\
         Controller_Sequencer_clrStepTriggerFlag();\
         Controller_Sequencer_PlayStep(\
             controller.sequencer.editPatternNumber,\
@@ -130,7 +155,7 @@ struct SEQUENCER_MODULE {
             Controller_Sequencer_SetEditStepNumber(controller.sequencer.playStepNumber);\
             Controller_Sequencer_View_Show();\
         }\
-        if (controller.sequencer.playStepNumber < CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1) {\
+        if (controller.sequencer.playStepNumber < (CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1)) {\
             controller.sequencer.playStepNumber++;\
         } else {\
             controller.sequencer.playStepNumber = 0;\
@@ -144,12 +169,33 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_PlayStep(patt, stepNum) {\
     if (controller.sequencer.patterns[patt][stepNum].noteNumber != CONTROLLER_NOTES_CFG_NOTE_OFF) {\
         controller.mode.mode1.lastNoteNumber = controller.sequencer.patterns[patt][stepNum].noteNumber;\
-        Controller_Notes_On(\
-            controller.mode.mode1.lastNoteNumber,\
-            controller.sequencer.patterns[patt][stepNum].velocity,\
-            controller.sequencer.patterns[patt][stepNum].gateTime\
-        );\
+        if (controller.sequencer.programNumber != controller.program.number) {\
+            controller.sequencer.programNumber = controller.program.number;\
+            MIDI_Out_SendProgramChange(controller.sequencer.programNumber);\
+        }\
+        if (controller.sequencer.gateTime != controller.notes.gateTime) {\
+            controller.sequencer.gateTime = controller.notes.gateTime;\
+            Controller_Notes_OnMono(\
+                0,\
+                controller.mode.mode1.lastNoteNumber,\
+                controller.sequencer.patterns[patt][stepNum].velocity,\
+                controller.sequencer.gateTime\
+            );\
+        } else {\
+            Controller_Notes_On(\
+                controller.mode.mode1.lastNoteNumber,\
+                controller.sequencer.patterns[patt][stepNum].velocity,\
+                controller.sequencer.patterns[patt][stepNum].gateTime\
+            );\
+        }\
     }\
+}
+
+/*
+ * Sets play cursor to zero step.
+ */
+#define Controller_Sequencer_ResetPlayPosition() {\
+    controller.sequencer.playStepNumber = 0;\
 }
 
 /*
@@ -169,26 +215,6 @@ struct SEQUENCER_MODULE {
     controller.sequencer.patterns[patt][pos].velocity = velo;\
     controller.sequencer.patterns[patt][pos].gateTime = gate;\
 }
-
-/*
- * Start sequencer playback.
- */
-#define Controller_Sequencer_StartPlayback() {\
-    if (!Controller_Sequencer_isPlayPatternFlag()) {\
-        controller.sequencer.playStepNumber = 0;\
-        Controller_Sequencer_setPlayPatternFlag();\
-    }\
-}
-
-/*
- * Stop sequencer.
- */
-#define Controller_Sequencer_StopPlayback() {\
-    if (Controller_Sequencer_isPlayPatternFlag()) {\
-        Controller_Sequencer_clrPlayPatternFlag();\
-    }\
-}
-
 
 #define Controller_Sequencer_ClearStepData(patt, pos) {\
     controller.sequencer.patterns[patt][pos].noteNumber = CONTROLLER_NOTES_CFG_NOTE_OFF;\

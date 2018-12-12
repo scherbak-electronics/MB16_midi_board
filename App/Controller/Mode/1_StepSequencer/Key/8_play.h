@@ -9,9 +9,11 @@
  * and sequencer structure.
  */
 #define Controller_Mode_1_Key_8_DownAction() {\
-    Controller_Sequencer_StartPlayback();\
+    Controller_Sync_StartPlayback();\
 }
 
 #define Controller_Mode_1_Key_8_UpAction() {\
     Controller_Sequencer_StopPlayback();\
+    Controller_Sequencer_ResetPlayPosition();\
+    Controller_Sync_StopPlayback();\
 }

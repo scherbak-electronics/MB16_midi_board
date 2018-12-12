@@ -39,6 +39,7 @@
  */
 #define App_System_Timer_1msProcessEvent() {\
     MIDI_In_TimeoutTimerProcess();\
+    Controller_Timer1msProcess();\
 }
 
 #define App_System_Timer_5msProcessEvent() {\
@@ -86,12 +87,15 @@
  * MIDI In message events 
  */
 #define App_MIDI_In_ExtSyncEvent() {\
+    Controller_Sync_ExtTrigProcess();\
 }
 
 #define App_MIDI_In_PlayEvent() {\
+    Controller_Sync_ExtStartPlayback();\
 }
 
 #define App_MIDI_in_StopEvent() {\
+    Controller_Sync_ExtStopPlayback();\
 }
 
 #define App_MIDI_In_NoteOnEvent(noteNum, velocity) {\

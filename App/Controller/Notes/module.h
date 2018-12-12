@@ -115,3 +115,15 @@ struct NOTES_MODULE {
     }\
 }
 
+#define Controller_Notes_OnMono(bufferIndex, noteNum, velo, gate) {\
+    if (controller.notes.buffer[bufferIndex].number == CONTROLLER_NOTES_CFG_NOTE_OFF) {\
+        controller.notes.buffer[bufferIndex].number = noteNum;\
+        controller.notes.buffer[bufferIndex].gateTimer = gate + 1;\
+        MIDI_Out_SendNoteOn(noteNum, velo);\
+    } else {\
+        MIDI_Out_SendNoteOff(controller.notes.buffer[bufferIndex].number, 0);\
+        controller.notes.buffer[bufferIndex].number = noteNum;\
+        controller.notes.buffer[bufferIndex].gateTimer = gate + 1;\
+        MIDI_Out_SendNoteOn(noteNum, velo);\
+    }\
+}

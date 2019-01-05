@@ -13,7 +13,5 @@
 }
 
 #define Controller_Mode_1_Key_8_UpAction() {\
-    Controller_Sequencer_StopPlayback();\
-    Controller_Sequencer_ResetPlayPosition();\
     Controller_Sync_StopPlayback();\
 }

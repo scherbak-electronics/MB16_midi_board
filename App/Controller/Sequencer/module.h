@@ -34,6 +34,7 @@ struct SEQUENCER_MODULE {
     BYTE bpmTimer;
     BYTE gateTime;
     BYTE programNumber;
+    BYTE stepTriggerDividerCounter;
 };
 
 #define Controller_Sequencer_setStepTriggerFlag()                           set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER)
@@ -83,6 +84,7 @@ struct SEQUENCER_MODULE {
     controller.sequencer.bpmTimer = controller.sequencer.tempo;\
     controller.sequencer.gateTime = 1;\
     controller.sequencer.programNumber = 0;\
+    controller.sequencer.stepTriggerDividerCounter = 0;\
     system.var = 0;\
     for (; system.var < CONTROLLER_SEQUENCER_CFG_PATTERN_LEN; system.var++) {\
         controller.sequencer.patterns[0][system.var].noteNumber = CONTROLLER_NOTES_CFG_NOTE_OFF;\
@@ -115,7 +117,7 @@ struct SEQUENCER_MODULE {
     if (controller.sequencer.bpmTimer != 0) {\
         controller.sequencer.bpmTimer--;\
         if (controller.sequencer.bpmTimer == 0) {\
-            Controller_Sequencer_setStepTriggerFlag();\
+            /*Controller_Sequencer_setStepTriggerFlag();*/\
             controller.sequencer.bpmTimer = controller.sequencer.tempo;\
         }\
     }\
@@ -125,18 +127,33 @@ struct SEQUENCER_MODULE {
  * Start sequencer playback.
  */
 #define Controller_Sequencer_StartPlayback() {\
-    if (!Controller_Sequencer_isPlayingFlag()) {\
-        controller.sequencer.playStepNumber = 0;\
-        Controller_Sequencer_setPlayingFlag();\
-    }\
+    controller.sequencer.playStepNumber = 0;\
+    controller.sequencer.stepTriggerDividerCounter = 0;\
+    Controller_Sequencer_setPlayingFlag();\
+    Controller_Sequencer_clrStepTriggerFlag();\
 }
 
 /*
  * Stop sequencer.
  */
 #define Controller_Sequencer_StopPlayback() {\
+    Controller_Sequencer_clrPlayingFlag();\
+    controller.sequencer.stepTriggerDividerCounter = 0;\
+}
+
+/*
+ * When diivider counter reach target value 
+ * sequencer position will be triggered
+ */
+#define Controller_Sequencer_StepTrigDividerCounterProcess() {\
     if (Controller_Sequencer_isPlayingFlag()) {\
-        Controller_Sequencer_clrPlayingFlag();\
+        if (controller.sequencer.stepTriggerDividerCounter > 5) {\
+            controller.sequencer.stepTriggerDividerCounter = 0;\
+        }\
+        if (controller.sequencer.stepTriggerDividerCounter == 0) {\
+            Controller_Sequencer_setStepTriggerFlag();\
+        }\
+        controller.sequencer.stepTriggerDividerCounter++;\
     }\
 }
 

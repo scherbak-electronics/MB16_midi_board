@@ -22,7 +22,6 @@ struct SYNC_MODULE {
     BYTE bpmTimer;
     BYTE trig96Time;
     BYTE trig96Timer;
-    BYTE stepTriggerDividerCounter;
     BYTE extTrigTimeoutTimer;
 };
 
@@ -63,7 +62,6 @@ struct SYNC_MODULE {
     controller.sync.trig96Time = 100;\
     controller.sync.trig96Timer = controller.sync.trig96Time;\
     controller.sync.extTrigTimeoutTimer = 0;\
-    controller.sync.stepTriggerDividerCounter = 0;\
 }
 
 #define Controller_Sync_SetTempo(bpm) {\
@@ -86,26 +84,12 @@ struct SYNC_MODULE {
     if (controller.sync.trig96Timer != 0 && !Controller_Sync_isExtTrigFlag()) {\
         controller.sync.trig96Timer--;\
         if (controller.sync.trig96Timer == 0) {\
-            Controller_Sync_StepTrigDividerCounterProcess();\
+            Controller_Sequencer_StepTrigDividerCounterProcess();\
             if (Controller_Sync_isSendTrigFlag()) {\
             }\
             controller.sync.trig96Timer = controller.sync.trig96Time;\
         }\
     }\
-}
-
-/*
- * When diivider counter reach target value 
- * sequencer position will be triggered
- */
-#define Controller_Sync_StepTrigDividerCounterProcess() {\
-    if (controller.sync.stepTriggerDividerCounter > 5) {\
-        controller.sync.stepTriggerDividerCounter = 0;\
-    }\
-    if (controller.sync.stepTriggerDividerCounter == 0) {\
-        Controller_Sequencer_setStepTriggerFlag();\
-    }\
-    controller.sync.stepTriggerDividerCounter++;\
 }
 
 /*
@@ -124,12 +108,10 @@ struct SYNC_MODULE {
  * External trigger event process 
  */
 #define Controller_Sync_ExtTrigProcess() {\
-    if (!Controller_Sequencer_isPlayingFlag()) {\
-        Controller_Sync_StartPlayback();\
-        Controller_Sequencer_StartPlayback();\
+    if (Controller_Sequencer_isPlayingFlag()) {\
+        Controller_Sequencer_StepTrigDividerCounterProcess();\
     }\
     Controller_Sync_setExtTrigFlag();\
-    Controller_Sync_StepTrigDividerCounterProcess();\
     controller.sync.extTrigTimeoutTimer = CONTROLLER_SYNC_CFG_EXT_TRIG_TIMEOUT;\
 }
 
@@ -137,17 +119,13 @@ struct SYNC_MODULE {
  * Start sequencer playback.
  */
 #define Controller_Sync_StartPlayback() {\
-    if (!Controller_Sequencer_isPlayingFlag()) {\
-        controller.sync.stepTriggerDividerCounter = 0;\
-        Controller_Sequencer_StartPlayback();\
-    }\
+    Controller_Sequencer_StartPlayback();\
 }
 
 /*
  * Stop sequencer.
  */
 #define Controller_Sync_StopPlayback() {\
-    controller.sync.stepTriggerDividerCounter = 0;\
     Controller_Sequencer_StopPlayback();\
 }
 
@@ -155,12 +133,9 @@ struct SYNC_MODULE {
  * Start sequencer playback from external.
  */
 #define Controller_Sync_ExtStartPlayback() {\
-    if (!Controller_Sequencer_isPlayingFlag()) {\
-        Controller_Sync_setExtTrigFlag();\
-        controller.sync.stepTriggerDividerCounter = 0;\
-        controller.sync.extTrigTimeoutTimer = CONTROLLER_SYNC_CFG_EXT_TRIG_TIMEOUT;\
-        Controller_Sequencer_StartPlayback();\
-    }\
+    Controller_Sync_setExtTrigFlag();\
+    controller.sync.extTrigTimeoutTimer = CONTROLLER_SYNC_CFG_EXT_TRIG_TIMEOUT;\
+    Controller_Sequencer_StartPlayback();\
 }
 
 /*
@@ -168,6 +143,5 @@ struct SYNC_MODULE {
  */
 #define Controller_Sync_ExtStopPlayback() {\
     Controller_Sync_clrExtTrigFlag();\
-    controller.sync.stepTriggerDividerCounter = 0;\
     Controller_Sequencer_StopPlayback();\
 }

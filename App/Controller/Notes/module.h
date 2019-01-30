@@ -38,14 +38,13 @@ struct NOTES_MODULE {
 }
 
 /*
- * Module Main Process.
+ * Notes module main loop process.
  */
 #define Controller_Notes_Process() {\
-    Controller_Notes_GateTimerProcess();\
 }
 
 /*
- * Gate Timer Process. 
+ * Gate timer event handler. 
  */
 #define Controller_Notes_GateTimerProcess() {\
     system.var = 0;\

@@ -56,7 +56,7 @@
 }
 
 /*
- * Analog inputs events
+ * Analog inputs (Knobs) events
  */
 #define App_System_ADC_ValueChangeEvent(chn, val) {\
     Controller_Mode_ADCAction(chn, val);\
@@ -64,7 +64,7 @@
 
 /*
  * Key scan events
- * Example module use Key actions
+ * Keys and switches mapping.
  */
 #define App_System_Key_ScanEvent() {\
     System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, Controller_Mode_KeyDownAction, Controller_Mode_KeyUpAction);\
@@ -87,7 +87,7 @@
  * MIDI In message events 
  */
 #define App_MIDI_In_ExtSyncEvent() {\
-    Controller_Sync_ExtTrigProcess();\
+    Controller_Sync_ExtClockProcess();\
 }
 
 #define App_MIDI_In_PlayEvent() {\

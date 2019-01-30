@@ -10,20 +10,22 @@
         Controller_Mode_1_Knob_4_ShiftLeftAction(knobVal);\
     } else {\
         controller.mode.mode1.lastNoteNumber = (BYTE)(knobVal * controller.mode.mode1.trigNoteStep) & 0b01111111;\
-        switch (Controller_Mode_1_GetTrigDirection()) {\
-            case CONTROLLER_MODE_1_CFG_TRIG_DIR_ALL:\
-            Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
-            break;\
-            case CONTROLLER_MODE_1_CFG_TRIG_DIR_FWD:\
-            if (Controller_Knob_GetDirection(4, knobVal) == CONTROLLER_KNOB_CFG_DIR_FWD) {\
-                Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+        if (!Controller_LFO_isPlayingFlag()) {\
+            switch (Controller_Mode_1_GetTrigDirection()) {\
+                case CONTROLLER_MODE_1_CFG_TRIG_DIR_ALL:\
+                    Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+                break;\
+                case CONTROLLER_MODE_1_CFG_TRIG_DIR_FWD:\
+                if (Controller_Knob_GetDirection(4, knobVal) == CONTROLLER_KNOB_CFG_DIR_FWD) {\
+                    Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+                }\
+                break;\
+                case CONTROLLER_MODE_1_CFG_TRIG_DIR_BCK:\
+                if (Controller_Knob_GetDirection(4, knobVal) == CONTROLLER_KNOB_CFG_DIR_BKD) {\
+                    Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+                }\
+                break;\
             }\
-            break;\
-            case CONTROLLER_MODE_1_CFG_TRIG_DIR_BCK:\
-            if (Controller_Knob_GetDirection(4, knobVal) == CONTROLLER_KNOB_CFG_DIR_BKD) {\
-                Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
-            }\
-            break;\
         }\
     }\
     if (Controller_Mode_1_isKeyNoteDown(CONTROLLER_MODE_1_CFG_KEY_NOTE_1_NUM) && Controller_Mode_1_isFunctionFlag()) {\
@@ -57,6 +59,8 @@
 #define Controller_Mode_1_Knob_4_ShiftLeftAction(knobVal) {\
     if ((controller.mode.mode1.lastNoteNumber & 0b00011111) != (knobVal >> 2)) {\
         controller.mode.mode1.lastNoteNumber = (knobVal >> 2) + (controller.mode.mode1.lastNoteNumber & 0b01100000);\
-        Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+        if (!Controller_LFO_isPlayingFlag()) {\
+            Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+        }\
     }\
 }

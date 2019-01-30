@@ -53,6 +53,7 @@ struct CONTROLLER_MODULE {
     Controller_Mode_Process();\
     Controller_Sync_Process();\
     Controller_Sequencer_Process();\
+    Controller_LFO_Process();\
 }
 
 /*
@@ -64,10 +65,11 @@ struct CONTROLLER_MODULE {
 }
 
 #define Controller_Timer10msProcess() {\
-    Controller_Notes_Process();\
-    Controller_Sync_ExtTrigTimeoutProcess();\
+    Controller_Notes_GateTimerProcess();\
+    Controller_LFO_GateTimerProcess();\
+    Controller_Sync_ExtClockTimeoutProcess();\
 }
 
 #define Controller_Timer1msProcess() {\
-    Controller_Sync_Trig96TimerProcess();\
+    Controller_Sync_Clock96TimerProcess();\
 }

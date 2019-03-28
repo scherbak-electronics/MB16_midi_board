@@ -1,5 +1,5 @@
 /*
- * LFO RATE
+ * LFO RATE / BPM
  * 
  * Knob 3 action in mode number 1.
  */
@@ -7,8 +7,12 @@
     if (Controller_Mode_1_isFunctionFlag()) {\
         Controller_Sequencer_SetTempo(knobVal + 1);\
     } else {\
-        if ((knobVal > 1) && (knobVal < 78)) {\
-            Controller_LFO_SetRate(knobVal >> 3);\
+        if ((knobVal > 1) && (knobVal < 126)) {\
+            if (knobVal < 78) {\
+                Controller_LFO_SetRate(knobVal >> 4);\
+            } else {\
+                Controller_LFO_SetRate((knobVal - 50) >> 3);\
+            }\
             if (!Controller_LFO_isPlayingFlag()) {\
                 Controller_LFO_Play();\
                 Controller_Sync_ResetDividerCounters();\

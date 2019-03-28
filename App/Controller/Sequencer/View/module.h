@@ -32,12 +32,21 @@ struct SEQUENCER_VIEW_MODULE {
     controller.sequencer.view.cursorTimer = 0;\
 }
 
+/*
+ * Module main loop.
+ */
 #define Controller_Sequencer_View_Process() {\
+}
+
+/*
+ * System timer 100ms process alias.
+ */
+#define Controller_Sequencer_View_Timer100msProcess() {\
     Controller_Sequencer_View_CursorTimerProcess();\
 }
 
 #define Controller_Sequencer_View_CursorTimerProcess() {\
-    if (Controller_Sequencer_View_isCursorShowFlag()) {\
+    if (Controller_Sequencer_View_isCursorShowFlag() && !Controller_View_isBusyFlag()) {\
         if (controller.sequencer.view.cursorTimer != 0) {\
             controller.sequencer.view.cursorTimer--;\
             if (controller.sequencer.view.cursorTimer == 0) {\

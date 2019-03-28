@@ -5,12 +5,14 @@
  * Provides play notes logic, keeps current note numbers in memory.
  * Controls note gate time and velocity.
  */
+#include "Scale/module.h"
 
-#define CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN        8
+#define CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN        4
 #define CONTROLLER_NOTES_CFG_GATE_TIME_INFINIT      0xff
-#define CONTROLLER_NOTES_CFG_GATE_TIME_DEFAULT      30
-#define CONTROLLER_NOTES_CFG_DEFAULT_VELOCITY       64
+#define CONTROLLER_NOTES_CFG_GATE_TIME_DEFAULT      5
+#define CONTROLLER_NOTES_CFG_DEFAULT_VELOCITY       100
 #define CONTROLLER_NOTES_CFG_NOTE_OFF               0xff
+#define CONTROLLER_NOTES_CFG_GATE_TIMEOUT_TIME      10
 
 struct NOTE_BUFFER {
     BYTE number;
@@ -22,6 +24,11 @@ struct NOTES_MODULE {
     struct NOTE_BUFFER buffer[CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN];
     BYTE velocity;
     BYTE gateTime;
+    struct NOTES_SCALE_MODULE scale;
+    BYTE octaveNumber;
+    BYTE noteNumberTmp;
+    BYTE singleNoteNumber;
+    BYTE singleNoteGateTimer;
 };
 
 /*
@@ -29,18 +36,32 @@ struct NOTES_MODULE {
  */
 #define Controller_Notes_Init() {\
     system.var = 0;\
+    controller.notes.flags = 0;\
+    controller.notes.octaveNumber = 0;\
+    controller.notes.noteNumberTmp = 0;\
+    controller.notes.singleNoteNumber = 0;\
+    controller.notes.singleNoteGateTimer = 0;\
     controller.notes.velocity = CONTROLLER_NOTES_CFG_DEFAULT_VELOCITY;\
     controller.notes.gateTime = CONTROLLER_NOTES_CFG_GATE_TIME_DEFAULT;\
     for (; system.var < CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN; system.var++) {\
         controller.notes.buffer[system.var].number = CONTROLLER_NOTES_CFG_NOTE_OFF;\
-        controller.notes.buffer[system.var].gateTimer = 0;\
+        controller.notes.buffer[system.var].gateTimer = 1;\
     }\
+    Controller_Notes_Scale_Init();\
 }
 
 /*
  * Notes module main loop process.
  */
 #define Controller_Notes_Process() {\
+}
+
+/*
+ * System timer 10ms process alias.
+ */
+#define Controller_Notes_Timer10msProcess() {\
+    Controller_Notes_GateTimerProcess();\
+    Controller_Notes_SingleNoteGateTimerProcess();\
 }
 
 /*
@@ -59,6 +80,33 @@ struct NOTES_MODULE {
 }
 
 /*
+ * Gate timeout timer process
+ */
+#define Controller_Notes_SingleNoteGateTimerProcess() {\
+    if (controller.notes.singleNoteGateTimer != 0) {\
+        controller.notes.singleNoteGateTimer--;\
+        if (controller.notes.singleNoteGateTimer == 0) {\
+            MIDI_Out_SendNoteOff(controller.notes.singleNoteNumber, 0);\
+            controller.notes.singleNoteNumber != CONTROLLER_NOTES_CFG_NOTE_OFF;\
+        }\
+    }\
+}
+
+/*
+ * Play (send MIDI msg note on) one single note by number with velocity and gate time.
+ */
+#define Controller_Notes_OnSingle(noteNum, velo, gate) {\
+    if (controller.notes.singleNoteGateTimer == 0) {\
+        if (controller.notes.singleNoteNumber != CONTROLLER_NOTES_CFG_NOTE_OFF) {\
+            MIDI_Out_SendNoteOff(controller.notes.singleNoteNumber, 0);\
+        }\
+        MIDI_Out_SendNoteOn(noteNum, velo);\
+        controller.notes.singleNoteNumber = noteNum;\
+    }\
+    controller.notes.singleNoteGateTimer = gate;\
+}
+
+/*
  * Play (send MIDI msg note on) note by number with velocity and gate time.
  * Finds first available note slot in buffer and allocate it. 
  * If gate time is CONTROLLER_NOTES_CFG_GATE_TIME_INF note will play infinitive time,
@@ -69,14 +117,14 @@ struct NOTES_MODULE {
     for (; system.var < CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN; system.var++) {\
         if (controller.notes.buffer[system.var].number == CONTROLLER_NOTES_CFG_NOTE_OFF) {\
             controller.notes.buffer[system.var].number = noteNum;\
-            controller.notes.buffer[system.var].gateTimer = gate + 1;\
+            controller.notes.buffer[system.var].gateTimer = gate;\
             MIDI_Out_SendNoteOn(noteNum, velo);\
             break;\
         } else {\
             if (system.var == (CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN - 1)) {\
                 MIDI_Out_SendNoteOff(controller.notes.buffer[CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN - 1].number, 0);\
                 controller.notes.buffer[CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN - 1].number = noteNum;\
-                controller.notes.buffer[CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN - 1].gateTimer = gate + 1;\
+                controller.notes.buffer[CONTROLLER_NOTES_CFG_NOTE_BUFFER_LEN - 1].gateTimer = gate;\
                 MIDI_Out_SendNoteOn(noteNum, velo);\
                 break;\
             }\
@@ -126,3 +174,35 @@ struct NOTES_MODULE {
         MIDI_Out_SendNoteOn(noteNum, velo);\
     }\
 }
+
+/*
+ * Increase octave number
+ */
+#define Controller_Notes_OctaveUp() {\
+    if (controller.notes.octaveNumber < 9) {\
+        controller.notes.octaveNumber++;\
+    }\
+}
+
+/*
+ * Decrease octave number
+ */
+#define Controller_Notes_OctaveDown() {\
+    if (controller.notes.octaveNumber != 0) {\
+        controller.notes.octaveNumber--;\
+    }\
+}
+
+/*
+ * Calculates note C number for current octave.
+ */
+#define Controller_Notes_GetOctaveNoteNumber()  (controller.notes.octaveNumber * 12)
+
+/*
+ * Set octave number 0-9.
+ */
+#define Controller_Notes_SetOctaveNumber(octNum) {\
+    controller.notes.octaveNumber = octNum;\
+}
+
+

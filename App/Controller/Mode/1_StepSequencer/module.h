@@ -7,7 +7,7 @@
  */
 #include "Key/module.h"
 #include "Knob/module.h"
-#include "View/template.h"
+#include "View/module.h"
 
 #define CONTROLLER_MODE_1_FLAG_PLAY                 0
 #define CONTROLLER_MODE_1_FLAG_REC                  1
@@ -26,6 +26,7 @@
 #define CONTROLLER_MODE_1_CFG_KEY_NOTE_2_NUM        11
 #define CONTROLLER_MODE_1_CFG_KEY_NOTE_3_NUM        12
 #define CONTROLLER_MODE_1_CFG_KEY_NOTE_4_NUM        13
+#define CONTROLLER_MODE_1_CFG_NOTE_TRIG_RESOLUTION  0
 
 struct MODE_1_KEY_NOTE {
     BYTE number;
@@ -34,9 +35,13 @@ struct MODE_1_KEY_NOTE {
 struct MODE_1_MODULE {
     BYTE flags;
     BYTE lastNoteNumber;
+    BYTE prevNoteNumber;
+    BYTE baseNoteNumber;
     struct MODE_1_KEY_NOTE keyNote[CONTROLLER_MODE_1_CFG_KEY_NOTES_COUNT];
+    BYTE keyNoteCounter;
     BYTE trigNoteStep;
     BYTE trigDirection;
+    BYTE noteTrigResolution;
 };
 
 #define Controller_Mode_1_setAltLeftFlag()            set_bit(controller.mode.mode1.flags, CONTROLLER_MODE_1_FLAG_ALT_LEFT)
@@ -70,8 +75,12 @@ struct MODE_1_MODULE {
  */
 #define Controller_Mode_1_Init() {\
     controller.mode.mode1.lastNoteNumber = 0;\
+    controller.mode.mode1.prevNoteNumber = 0;\
     controller.mode.mode1.flags = 0;\
     controller.mode.mode1.trigNoteStep = 1;\
+    controller.mode.mode1.noteTrigResolution = CONTROLLER_MODE_1_CFG_NOTE_TRIG_RESOLUTION;\
+    controller.mode.mode1.baseNoteNumber = 0;\
+    controller.mode.mode1.keyNoteCounter = 0;\
     Controller_Mode_1_SetTrigDirection(CONTROLLER_MODE_1_CFG_TRIG_DIR_ALL);\
     system.var = 0;\
     for (; system.var < CONTROLLER_MODE_1_CFG_KEY_NOTES_COUNT; system.var++) {\

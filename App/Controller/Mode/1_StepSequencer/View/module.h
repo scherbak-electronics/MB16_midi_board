@@ -1,5 +1,5 @@
 /*
- * Controller_Mode_1_View template
+ * Controller_Mode_1_View module
  * 
  * Mode_1 specific view.
  * each controller mode may (or may not) have its own specific parameters view.

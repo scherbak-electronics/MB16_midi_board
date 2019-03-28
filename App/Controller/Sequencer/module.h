@@ -7,15 +7,19 @@
  * is used to track global program number changes.
  */
 #include "View/module.h"
+#include "Notes/module.h"
 
 #define CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER          0
 #define CONTROLLER_SEQUENCER_FLAG_PLAY                  1
 #define CONTROLLER_SEQUENCER_FLAG_REC                   2
 #define CONTROLLER_SEQUENCER_FLAG_OVERDUB               3
+#define CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY         4
 
 #define CONTROLLER_SEQUENCER_CFG_PATTERN_LEN            16
 #define CONTROLLER_SEQUENCER_CFG_PATTERNS_COUNT          4
 #define CONTROLLER_SEQUENCER_CFG_DEFAULT_TEMPO          50
+#define CONTROLLER_SEQUENCER_CFG_CHANNELS_COUNT          4
+
 
 struct PATTERN_STEP_DATA {
     BYTE noteNumber;
@@ -23,20 +27,30 @@ struct PATTERN_STEP_DATA {
     BYTE gateTime;
 };
 
+struct SEQUENCER_CHANNEL {
+    BYTE patternNumber;
+};
+
 struct SEQUENCER_MODULE {
     BYTE flags;
     struct PATTERN_STEP_DATA patterns[CONTROLLER_SEQUENCER_CFG_PATTERNS_COUNT][CONTROLLER_SEQUENCER_CFG_PATTERN_LEN];
     BYTE playStepNumber;
+    BYTE playPatternNumber;
     BYTE editPatternNumber;
     BYTE editStepNumber;
     BYTE editStepNumberPrev;
     BYTE structureNumber;
+    BYTE structureNumberPrev;
     struct SEQUENCER_VIEW_MODULE view;
     BYTE tempo;
     BYTE bpmTimer;
     BYTE gateTime;
     BYTE programNumber;
     BYTE clockDividerCounter;
+    struct SEQUENCER_NOTES_MODULE notes;
+    struct SEQUENCER_CHANNEL channels[CONTROLLER_SEQUENCER_CFG_CHANNELS_COUNT];
+    BYTE shuffleTimer;
+    BYTE shuffleTime;
 };
 
 #define Controller_Sequencer_setStepTriggerFlag()                           set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_TRIGGER)
@@ -55,6 +69,10 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_clrOverdubFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
 #define Controller_Sequencer_isOverdubFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
 #define Controller_Sequencer_invOverdubFlag()                                    inv_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
+
+#define Controller_Sequencer_setShuffleDelayFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
+#define Controller_Sequencer_clrShuffleDelayFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
+#define Controller_Sequencer_isShuffleDelayFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
 
 
 #define Controller_Sequencer_SetEditPatternNumber(num)                      controller.sequencer.editPatternNumber = num
@@ -77,7 +95,9 @@ struct SEQUENCER_MODULE {
  */
 #define Controller_Sequencer_Init() {\
     controller.sequencer.flags = 0;\
+    Controller_Sequencer_setOverdubFlag();\
     controller.sequencer.structureNumber = 0;\
+    controller.sequencer.structureNumberPrev = 0;\
     controller.sequencer.playStepNumber = 0;\
     controller.sequencer.editPatternNumber = 0;\
     controller.sequencer.editStepNumber = 0;\
@@ -102,7 +122,14 @@ struct SEQUENCER_MODULE {
         controller.sequencer.patterns[3][system.var].velocity = 0;\
         controller.sequencer.patterns[3][system.var].gateTime = 1;\
     }\
+    controller.sequencer.channels[0].patternNumber = 0xff;\
+    controller.sequencer.channels[1].patternNumber = 0xff;\
+    controller.sequencer.channels[2].patternNumber = 0xff;\
+    controller.sequencer.channels[3].patternNumber = 0xff;\
+    controller.sequencer.shuffleTimer = 0;\
+    controller.sequencer.shuffleTime = 2;\
     Controller_Sequencer_View_Init();\
+    Controller_Sequencer_Notes_Init();\
 }
 
 /*
@@ -120,6 +147,18 @@ struct SEQUENCER_MODULE {
         controller.sequencer.bpmTimer--;\
         if (controller.sequencer.bpmTimer == 0) {\
             controller.sequencer.bpmTimer = controller.sequencer.tempo;\
+        }\
+    }\
+}
+
+/*
+ * Shuffle timer Process.
+ */
+#define Controller_Sequencer_ShuffleTimerProcess() {\
+    if (controller.sequencer.shuffleTimer != 0) {\
+        controller.sequencer.shuffleTimer--;\
+        if (controller.sequencer.shuffleTimer == 0) {\
+            Controller_Sequencer_setStepTriggerFlag();\
         }\
     }\
 }
@@ -144,41 +183,43 @@ struct SEQUENCER_MODULE {
  * Play pattern positions Process.
  */
 #define Controller_Sequencer_PlayProcess() {\
-    if (Controller_Sequencer_isPlayingFlag() && Controller_Sequencer_isStepTriggerFlag()) {\
-        System_Led_Blink(0);\
-        Controller_Sequencer_clrStepTriggerFlag();\
-        Controller_Sequencer_PlayStep(\
-            controller.sequencer.editPatternNumber,\
-            controller.sequencer.playStepNumber\
-        );\
-        if (Controller_Sequencer_isOverdubFlag()) {\
-            Controller_Sequencer_SetEditStepNumber(controller.sequencer.playStepNumber);\
-            Controller_Sequencer_View_Show();\
+    if (Controller_Sequencer_isPlayingFlag()) {\
+        if (controller.sequencer.shuffleTime > 0) {\
+            /* check if we still stand on the last step just before begining of new pattern from step 0 */\
+            if (controller.sequencer.playStepNumber != (CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1)) {\
+                if ((controller.sequencer.playStepNumber + 2) % 2 == 0) {\
+                    if (!Controller_Sequencer_isShuffleDelayFlag()) {\
+                        Controller_Sequencer_SetShuffleDelayTimer();\
+                        Controller_Sequencer_clrStepTriggerFlag();\
+                    }\
+                }\
+            }\
         }\
-        if (controller.sequencer.playStepNumber < (CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1)) {\
-            controller.sequencer.playStepNumber++;\
-        } else {\
-            controller.sequencer.playStepNumber = 0;\
+        if (Controller_Sequencer_isStepTriggerFlag()) {\
+            Controller_Sequencer_clrStepTriggerFlag();\
+            Controller_Sequencer_clrShuffleDelayFlag();\
+            if (controller.sequencer.playStepNumber < (CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1)) {\
+                controller.sequencer.playStepNumber++;\
+            } else {\
+                controller.sequencer.playStepNumber = 0;\
+            }\
+            /* System_Led_Blink(0); */\
+            if (controller.sequencer.structureNumber > 0) {\
+                Controller_Sequencer_PlayStepInStructure();\
+            } else {\
+                Controller_Sequencer_PlayStep(\
+                    controller.sequencer.editPatternNumber,\
+                    controller.sequencer.playStepNumber\
+                );\
+            }\
+            if (Controller_Sequencer_isOverdubFlag()) {\
+                Controller_Sequencer_SetEditStepNumber(controller.sequencer.playStepNumber);\
+                if (Controller_View_CanShow()) {\
+                    Controller_Sequencer_View_Show();\
+                }\
+            }\
         }\
     }\
-}
-
-/*
- * Start sequencer playback.
- */
-#define Controller_Sequencer_StartPlayback() {\
-    controller.sequencer.playStepNumber = 0;\
-    controller.sequencer.clockDividerCounter = 0;\
-    Controller_Sequencer_setPlayingFlag();\
-    Controller_Sequencer_clrStepTriggerFlag();\
-}
-
-/*
- * Stop sequencer.
- */
-#define Controller_Sequencer_StopPlayback() {\
-    Controller_Sequencer_clrPlayingFlag();\
-    controller.sequencer.clockDividerCounter = 0;\
 }
 
 /*
@@ -193,14 +234,15 @@ struct SEQUENCER_MODULE {
         }\
         if (controller.sequencer.gateTime != controller.notes.gateTime) {\
             controller.sequencer.gateTime = controller.notes.gateTime;\
-            Controller_Notes_OnMono(\
-                0,\
+            Controller_Sequencer_Notes_On(\
+                patt,\
                 controller.mode.mode1.lastNoteNumber,\
                 controller.sequencer.patterns[patt][stepNum].velocity,\
                 controller.sequencer.gateTime\
             );\
         } else {\
-            Controller_Notes_On(\
+            Controller_Sequencer_Notes_On(\
+                patt,\
                 controller.mode.mode1.lastNoteNumber,\
                 controller.sequencer.patterns[patt][stepNum].velocity,\
                 controller.sequencer.patterns[patt][stepNum].gateTime\
@@ -210,10 +252,88 @@ struct SEQUENCER_MODULE {
 }
 
 /*
+ * Play step depending on current structure. Pattern number 
+ * defined by active channel.
+ */
+#define Controller_Sequencer_PlayStepInStructure() {\
+    switch (controller.sequencer.structureNumber) {\
+        case 4: /* One by one (all in series) structure */\
+        if (controller.sequencer.playStepNumber == 0) {\
+            if (controller.sequencer.playPatternNumber > (CONTROLLER_SEQUENCER_CFG_PATTERNS_COUNT - 2)) {\
+                controller.sequencer.playPatternNumber = 0;\
+            } else {\
+                controller.sequencer.playPatternNumber++;\
+            }\
+        }\
+        Controller_Sequencer_PlayStep(\
+            controller.sequencer.playPatternNumber,\
+            controller.sequencer.playStepNumber\
+        );\
+        break;\
+        case 2: /* P1 and P2 in series, 3 and 4 repeats in parallel with each of 1 and 2 */\
+        if (controller.sequencer.playStepNumber == 0) {\
+            if (controller.sequencer.playPatternNumber > 0) {\
+                controller.sequencer.playPatternNumber = 0;\
+            } else {\
+                controller.sequencer.playPatternNumber++;\
+            }\
+        }\
+        Controller_Sequencer_PlayStep(\
+            controller.sequencer.playPatternNumber,\
+            controller.sequencer.playStepNumber\
+        );\
+        Controller_Sequencer_PlayStep(2, controller.sequencer.playStepNumber);\
+        Controller_Sequencer_PlayStep(3, controller.sequencer.playStepNumber);\
+        break;\
+        case 1: /* all in parallel */\
+        Controller_Sequencer_PlayStep(0, controller.sequencer.playStepNumber);\
+        Controller_Sequencer_PlayStep(1, controller.sequencer.playStepNumber);\
+        Controller_Sequencer_PlayStep(2, controller.sequencer.playStepNumber);\
+        Controller_Sequencer_PlayStep(3, controller.sequencer.playStepNumber);\
+        break;\
+        case 3: /* 1 and 2 series in parallel with 3 and 4 series */\
+        if (controller.sequencer.playStepNumber == 0) {\
+            if (controller.sequencer.playPatternNumber > 0) {\
+                controller.sequencer.playPatternNumber = 0;\
+            } else {\
+                controller.sequencer.playPatternNumber++;\
+            }\
+        }\
+        Controller_Sequencer_PlayStep(\
+            controller.sequencer.playPatternNumber,\
+            controller.sequencer.playStepNumber\
+        );\
+        Controller_Sequencer_PlayStep(\
+            (controller.sequencer.playPatternNumber + 2),\
+            controller.sequencer.playStepNumber\
+        );\
+        break;\
+    }\
+}
+
+/*
+ * Start sequencer playback.
+ */
+#define Controller_Sequencer_StartPlayback() {\
+    Controller_Sequencer_ResetPlayPosition();\
+    controller.sequencer.clockDividerCounter = 0;\
+    Controller_Sequencer_setPlayingFlag();\
+    Controller_Sequencer_clrStepTriggerFlag();\
+}
+
+/*
+ * Stop sequencer.
+ */
+#define Controller_Sequencer_StopPlayback() {\
+    Controller_Sequencer_clrPlayingFlag();\
+    controller.sequencer.clockDividerCounter = 0;\
+}
+
+/*
  * Sets play cursor to zero step.
  */
 #define Controller_Sequencer_ResetPlayPosition() {\
-    controller.sequencer.playStepNumber = 0;\
+    controller.sequencer.playStepNumber = CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1;\
 }
 
 /*
@@ -241,4 +361,20 @@ struct SEQUENCER_MODULE {
     controller.sequencer.patterns[patt][pos].noteNumber = CONTROLLER_NOTES_CFG_NOTE_OFF;\
     controller.sequencer.patterns[patt][pos].velocity = 0;\
     controller.sequencer.patterns[patt][pos].gateTime = 1;\
+}
+
+/*
+ * Set shuffle delay timer. 
+ */
+#define Controller_Sequencer_SetShuffleDelayTimer() {\
+    controller.sequencer.shuffleTimer = controller.sequencer.shuffleTime;\
+    Controller_Sequencer_setShuffleDelayFlag();\
+}
+
+/*
+ * Reset shuffle delay timer. 
+ */
+#define Controller_Sequencer_ResetShuffleDelayTimer() {\
+    controller.sequencer.shuffleTimer = 0;\
+    Controller_Sequencer_clrShuffleDelayFlag();\
 }

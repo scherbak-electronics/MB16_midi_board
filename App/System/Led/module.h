@@ -1,8 +1,10 @@
 /*
  * status LEDs module
  */
-#define SYSTEM_LED_CFG_BLINK_TIME           4
+#define SYSTEM_LED_CFG_BLINK_TIME           2
 #define SYSTEM_LED_FLAG_BLINK_DISABLED      0
+#define SYSTEM_LED_FLAG_BLINK_INVERTED      1
+#define SYSTEM_LED_CFG_TX_LED_NUM           0
 
 struct SYSTEM_LED_MODULE {
     BYTE flags;
@@ -22,7 +24,7 @@ struct SYSTEM_LED_MODULE {
  * Proess for all Led Timers
  */
 #define System_Led_TimersProcess() {\
-    System_Led_BlinkTimerProcess(0);\
+    System_Led_BlinkTimerProcess(SYSTEM_LED_CFG_TX_LED_NUM);\
 }
 
 /*
@@ -32,7 +34,11 @@ struct SYSTEM_LED_MODULE {
     if (system.led.blinkTimer != 0) {\
         system.led.blinkTimer--;\
         if (system.led.blinkTimer == 0) {\
-            System_Led_Off(ledNum);\
+            if (bit_is_set(system.led.flags, SYSTEM_LED_FLAG_BLINK_INVERTED)) {\
+                System_Led_On(ledNum);\
+            } else {\
+                System_Led_Off(ledNum);\
+            }\
         }\
     }\
 }
@@ -42,7 +48,13 @@ struct SYSTEM_LED_MODULE {
  */
 #define System_Led_Blink(ledNum) {\
     if (!bit_is_set(system.led.flags, SYSTEM_LED_FLAG_BLINK_DISABLED)) {\
-        System_Led_On(ledNum);\
+        if (bit_is_set(systemLedPortOut, ledNum)) {\
+            System_Led_Off(ledNum);\
+            set_bit(system.led.flags, SYSTEM_LED_FLAG_BLINK_INVERTED);\
+        } else {\
+            System_Led_On(ledNum);\
+            clr_bit(system.led.flags, SYSTEM_LED_FLAG_BLINK_INVERTED);\
+        }\
 	    system.led.blinkTimer = SYSTEM_LED_CFG_BLINK_TIME;\
     }\
 }

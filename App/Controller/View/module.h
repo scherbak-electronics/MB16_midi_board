@@ -14,17 +14,24 @@
  *               ||___Green        ||______Green
  *               |____Green        |_______Green
  */
-#define CONTROLLER_VIEW_FLAG_START_BLINKING             0
+#include "Animation/module.h"
+#include "Dialog/module.h"
+#include "Param/module.h"
 
-#define CONTROLLER_VIEW_CFG_DISPLAYS_NUMBER             1
-#define CONTROLLER_VIEW_CFG_SHOW_PARAM_TIME             20
-#define CONTROLLER_VIEW_CFG_BLINK_TIME                  2
-#define CONTROLLER_VIEW_CFG_GREEN_LEDS_BITNUM_OFFSET    4
+#define CONTROLLER_VIEW_FLAG_START_BLINKING                     0
+#define CONTROLLER_VIEW_FLAG_DIALOG_VISIBLE                     1
+#define CONTROLLER_VIEW_FLAG_INTERACTION_DISABLED               2
+#define CONTROLLER_VIEW_FLAG_BUSY                               3
 
-#define CONTROLLER_VIEW_BITMASK_LEDS                    0b11111000
-#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS              0b11110000
-#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS_NOT          0b00001111
-#define CONTROLLER_VIEW_BITMASK_RED_LED                 0b00001000
+#define CONTROLLER_VIEW_CFG_DISPLAYS_NUMBER                     1
+#define CONTROLLER_VIEW_CFG_SHOW_PARAM_TIME                     20
+#define CONTROLLER_VIEW_CFG_BLINK_TIME                          2
+#define CONTROLLER_VIEW_CFG_GREEN_LEDS_BITNUM_OFFSET            4
+
+#define CONTROLLER_VIEW_BITMASK_LEDS                            0b11111000
+#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS                      0b11110000
+#define CONTROLLER_VIEW_BITMASK_GREEN_LEDS_NOT                  0b00001111
+#define CONTROLLER_VIEW_BITMASK_RED_LED                         0b00001000
 
 struct VIEW_MODULE {
     BYTE flags;
@@ -33,13 +40,29 @@ struct VIEW_MODULE {
     BYTE blinkBuffer;
     BYTE restoreTimer;
     BYTE blinkTimer;
+    struct CONTROLLER_VIEW_ANIMATION_MODULE animation;
+    struct CONTROLLER_VIEW_DIALOG_MODULE dialog;
+    struct CONTROLLER_VIEW_PARAM_MODULE param;
 };
 
-#define Controller_View_setBlinkingFlag()           set_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_START_BLINKING)
-#define Controller_View_clrBlinkingFlag()           clr_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_START_BLINKING)
-#define Controller_View_isBlinkingFlag()            bit_is_set(controller.view.flags, CONTROLLER_VIEW_FLAG_START_BLINKING)
+#define Controller_View_setBlinkingFlag()                       set_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_START_BLINKING)
+#define Controller_View_clrBlinkingFlag()                       clr_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_START_BLINKING)
+#define Controller_View_isBlinkingFlag()                        bit_is_set(controller.view.flags, CONTROLLER_VIEW_FLAG_START_BLINKING)
 
-#define Controller_View_IsParamVisible()            (controller.view.restoreTimer != 0)
+#define Controller_View_setBusyFlag()                           set_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_BUSY)
+#define Controller_View_clrBusyFlag()                           clr_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_BUSY)
+#define Controller_View_isBusyFlag()                            bit_is_set(controller.view.flags, CONTROLLER_VIEW_FLAG_BUSY)
+
+#define Controller_View_setDialogVisibleFlag()                  set_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_DIALOG_VISIBLE)
+#define Controller_View_clrDialogVisibleFlag()                  clr_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_DIALOG_VISIBLE)
+#define Controller_View_isDialogVisibleFlag()                   bit_is_set(controller.view.flags, CONTROLLER_VIEW_FLAG_DIALOG_VISIBLE)
+
+#define Controller_View_setInteractionDisabledFlag()            set_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_INTERACTION_DISABLED)
+#define Controller_View_clrInteractionDisabledFlag()            clr_bit(controller.view.flags, CONTROLLER_VIEW_FLAG_INTERACTION_DISABLED)
+#define Controller_View_isInteractionDisabledFlag()             bit_is_set(controller.view.flags, CONTROLLER_VIEW_FLAG_INTERACTION_DISABLED)
+
+#define Controller_View_IsParamVisible()                        (controller.view.restoreTimer != 0)
+#define Controller_View_CanShow()                               (!Controller_View_isDialogVisibleFlag())
 
 /*
  * Module Initialization.
@@ -49,12 +72,21 @@ struct VIEW_MODULE {
     controller.view.restoreTimer = 0;\
     controller.view.leds = 0b00000000;\
     controller.view.ledsBuffer = 0b00000000;\
+    Controller_View_Animation_Init();\
+    Controller_View_Dialog_Init();\
+    Controller_View_Param_Init();\
 }
 
 /*
  * Module Main Process.
  */
 #define Controller_View_Process() {\
+}
+
+/*
+ * System timer 100ms process alias.
+ */
+#define Controller_View_Timer100msProcess() {\
     Controller_View_RestoreTimerProcess();\
 }
 
@@ -132,7 +164,6 @@ struct VIEW_MODULE {
  * Clean only green leds buffer.
  */
 #define Controller_View_CleanGreenPort() systemLedPortOut &= CONTROLLER_VIEW_BITMASK_GREEN_LEDS_NOT
-
 
 /*
  * Set leds buffer bit.

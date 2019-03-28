@@ -15,16 +15,16 @@
 #define CONTROLLER_SYNC_CFG_CLOCK_96_TIME            21
 #define CONTROLLER_SYNC_CFG_DEFAULT_TEMPO           120
 #define CONTROLLER_SYNC_CFG_MAX_DIV_COUNTERS        10
-#define CONTROLLER_SYNC_CFG_DIV_2_CNT_VAL           1
-#define CONTROLLER_SYNC_CFG_DIV_3_CNT_VAL           2
-#define CONTROLLER_SYNC_CFG_DIV_4_CNT_VAL           3
-#define CONTROLLER_SYNC_CFG_DIV_6_CNT_VAL           5
-#define CONTROLLER_SYNC_CFG_DIV_8_CNT_VAL           7
-#define CONTROLLER_SYNC_CFG_DIV_12_CNT_VAL          11
-#define CONTROLLER_SYNC_CFG_DIV_16_CNT_VAL          15
-#define CONTROLLER_SYNC_CFG_DIV_24_CNT_VAL          23
-#define CONTROLLER_SYNC_CFG_DIV_32_CNT_VAL          31
-#define CONTROLLER_SYNC_CFG_DIV_48_CNT_VAL          47
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_2           1
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_3           2
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_4           3
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_6           5
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_8           7
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_12          11
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_16          15
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_24          23  /* one beat, quarter note */
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_32          31
+#define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_48          47
 
 struct SYNC_DIVIDER_COUNTER {
     BYTE flags;
@@ -108,8 +108,7 @@ struct SYNC_MODULE {
     if (controller.sync.clock96Timer != 0 && !Controller_Sync_isExtClockFlag()) {\
         controller.sync.clock96Timer--;\
         if (controller.sync.clock96Timer == 0) {\
-            Controller_Sequencer_ClockDividerCounterProcess();\
-            Controller_Sync_ClockDividerCountersProcess();\
+            Controller_Sync_Clock96TimerEvent();\
             if (Controller_Sync_isSendClockFlag()) {\
             }\
             controller.sync.clock96Timer = controller.sync.clock96Time;\
@@ -118,26 +117,35 @@ struct SYNC_MODULE {
 }
 
 /*
+ * Sync 1/96 clock timer event.
+ */
+#define Controller_Sync_Clock96TimerEvent() {\
+    Controller_Sequencer_ClockDividerCounterProcess();\
+    Controller_Sequencer_ShuffleTimerProcess();\
+    Controller_Sync_ClockDividerCountersProcess();\
+}
+
+/*
  * Trig Divider Counter Process.
  */
 #define Controller_Sync_ClockDividerCountersProcess() {\
-    Controller_Sync_IncrementClockDividerCounter(0, 48);\
-    Controller_Sync_IncrementClockDividerCounter(1, 32);\
-    Controller_Sync_IncrementClockDividerCounter(2, 24);\
-    Controller_Sync_IncrementClockDividerCounter(3, 16);\
-    Controller_Sync_IncrementClockDividerCounter(4, 12);\
-    Controller_Sync_IncrementClockDividerCounter(5, 8);\
-    Controller_Sync_IncrementClockDividerCounter(6, 6);\
-    Controller_Sync_IncrementClockDividerCounter(7, 4);\
-    Controller_Sync_IncrementClockDividerCounter(8, 3);\
-    Controller_Sync_IncrementClockDividerCounter(9, 2);\
+    Controller_Sync_IncrementClockDividerCounter(0, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_24);\
+    Controller_Sync_IncrementClockDividerCounter(1, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_16);\
+    Controller_Sync_IncrementClockDividerCounter(2, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_12);\
+    Controller_Sync_IncrementClockDividerCounter(3, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_8);\
+    Controller_Sync_IncrementClockDividerCounter(4, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_6);\
+    Controller_Sync_IncrementClockDividerCounter(5, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_4);\
+    Controller_Sync_IncrementClockDividerCounter(6, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_3);\
+    Controller_Sync_IncrementClockDividerCounter(7, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_2);\
+    Controller_Sync_IncrementClockDividerCounter(8, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_32);\
+    Controller_Sync_IncrementClockDividerCounter(9, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_48);\
 }
 
 /*
  * Handle one of the divider counters by number.
  */
 #define Controller_Sync_IncrementClockDividerCounter(counterNum, divRatio) {\
-    if (controller.sync.clockDividerCounters[counterNum].value > CONTROLLER_SYNC_CFG_DIV_##divRatio##_CNT_VAL) {\
+    if (controller.sync.clockDividerCounters[counterNum].value > divRatio) {\
         controller.sync.clockDividerCounters[counterNum].value = 0;\
     }\
     if (controller.sync.clockDividerCounters[counterNum].value == 0) {\

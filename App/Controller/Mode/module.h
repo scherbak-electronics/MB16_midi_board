@@ -11,12 +11,19 @@
 #define CONTROLLER_MODE_NUMBER_0   0
 #define CONTROLLER_MODE_NUMBER_1   1
 
+#define CONTROLLER_MODE_FLAG_ACTIONS_DISABLED       0
+
 struct MODE_MODULE {
     BYTE flags;
     BYTE number;
     struct MODE_1_MODULE mode1;
+    WORD keyActionAllowFlags;
+    BYTE knobActionAllowFlags;
 };
 
+#define Controller_Mode_isActionsDisabledFlag()     bit_is_set(controller.mode.flags, CONTROLLER_MODE_FLAG_ACTIONS_DISABLED)
+#define Controller_Mode_setActionsDisabledFlag()    set_bit(controller.mode.flags, CONTROLLER_MODE_FLAG_ACTIONS_DISABLED)
+#define Controller_Mode_clrActionsDisabledFlag()    clr_bit(controller.mode.flags, CONTROLLER_MODE_FLAG_ACTIONS_DISABLED)
 
 
 /*
@@ -25,8 +32,85 @@ struct MODE_MODULE {
 #define Controller_Mode_Init() {\
     controller.mode.number = 0;\
     controller.mode.flags = 0b00000000;\
+    Controller_Mode_EnableAllActions();\
     Controller_Mode_0_Init();\
     Controller_Mode_1_Init();\
+}
+
+/*
+ * Check is key action enabled.
+ * keyNum is zero based.
+ */
+#define Controller_Mode_IsEnabledKeyAction(keyNum)  word_bit_is_set(controller.mode.keyActionAllowFlags, keyNum)
+
+/*
+ * Enables key action.
+ * keyNum is zero based.
+ */
+#define Controller_Mode_EnableKeyAction(keyNum) {\
+    set_bit(controller.mode.keyActionAllowFlags, keyNum);\
+}
+
+/*
+ * Disable key action.
+ * keyNum is zero based.
+ */
+#define Controller_Mode_DisableKeyAction(keyNum) {\
+    clr_bit(controller.mode.keyActionAllowFlags, keyNum);\
+}
+
+/*
+ * Check is knob action enabled.
+ * knobNum is zero based.
+ */
+#define Controller_Mode_IsEnabledKnobAction(knobNum)  bit_is_set(controller.mode.knobActionAllowFlags, knobNum)
+
+/*
+ * Enables knob action.
+ * knobNum is zero based.
+ */
+#define Controller_Mode_EnableKnobAction(knobNum) {\
+    set_bit(controller.mode.knobActionAllowFlags, knobNum);\
+}
+
+/*
+ * Disable knob action.
+ * knobNum is zero based.
+ */
+#define Controller_Mode_DisableKnobAction(knobNum) {\
+    clr_bit(controller.mode.knobActionAllowFlags, knobNum);\
+}
+
+/*
+ * Disable all key actions.
+ */
+#define Controller_Mode_DisableAllKeyActions() {\
+    controller.mode.keyActionAllowFlags = 0x0000;\
+}
+
+/*
+ * Enable all key actions.
+ */
+#define Controller_Mode_EnableAllKeyActions() {\
+    controller.mode.keyActionAllowFlags = 0xffff;\
+}
+
+/*
+ * Disable all key actions.
+ */
+#define Controller_Mode_DisableAllActions() {\
+    controller.mode.keyActionAllowFlags = 0x0000;\
+    controller.mode.knobActionAllowFlags = 0x00;\
+    Controller_Mode_setActionsDisabledFlag();\
+}
+
+/*
+ * Enable key and knob actions.
+ */
+#define Controller_Mode_EnableAllActions() {\
+    controller.mode.keyActionAllowFlags = 0xffff;\
+    controller.mode.knobActionAllowFlags = 0xff;\
+    Controller_Mode_clrActionsDisabledFlag();\
 }
 
 /*
@@ -42,13 +126,15 @@ struct MODE_MODULE {
  * knob actions which depends on currently selected mode.
  */
 #define Controller_Mode_ADCAction(knobNum, knobVal) {\
-    switch (controller.mode.number) {\
-        case CONTROLLER_MODE_NUMBER_0:\
-            Controller_Mode_KnobAction(0, knobNum, knobVal);\
-            break;\
-        case CONTROLLER_MODE_NUMBER_1:\
-            Controller_Mode_KnobAction(1, knobNum, knobVal);\
-            break;\
+    if (Controller_Mode_IsEnabledKnobAction(knobNum)) {\
+        switch (controller.mode.number) {\
+            case CONTROLLER_MODE_NUMBER_0:\
+                Controller_Mode_KnobAction(0, knobNum, knobVal);\
+                break;\
+            case CONTROLLER_MODE_NUMBER_1:\
+                Controller_Mode_KnobAction(1, knobNum, knobVal);\
+                break;\
+        }\
     }\
 }
 
@@ -86,24 +172,28 @@ struct MODE_MODULE {
  * Routes KeyDown action to mode key down action depending on selected mode.
  */
 #define Controller_Mode_KeyDownAction(keyNum) {\
-    switch (controller.mode.number) {\
-        case CONTROLLER_MODE_NUMBER_0:\
-            Controller_Mode_0_Key_##keyNum##_DownAction();\
-            break;\
-        case CONTROLLER_MODE_NUMBER_1:\
-            Controller_Mode_1_Key_##keyNum##_DownAction();\
-            break;\
+    if (Controller_Mode_IsEnabledKeyAction(keyNum)) {\
+        switch (controller.mode.number) {\
+            case CONTROLLER_MODE_NUMBER_0:\
+                Controller_Mode_0_Key_##keyNum##_DownAction();\
+                break;\
+            case CONTROLLER_MODE_NUMBER_1:\
+                Controller_Mode_1_Key_##keyNum##_DownAction();\
+                break;\
+        }\
     }\
 }
 
 #define Controller_Mode_KeyUpAction(keyNum) {\
-    switch (controller.mode.number) {\
-        case CONTROLLER_MODE_NUMBER_0:\
-            Controller_Mode_0_Key_##keyNum##_UpAction();\
-            break;\
-        case CONTROLLER_MODE_NUMBER_1:\
-            Controller_Mode_1_Key_##keyNum##_UpAction();\
-            break;\
+    if (Controller_Mode_IsEnabledKeyAction(keyNum)) {\
+        switch (controller.mode.number) {\
+            case CONTROLLER_MODE_NUMBER_0:\
+                Controller_Mode_0_Key_##keyNum##_UpAction();\
+                break;\
+            case CONTROLLER_MODE_NUMBER_1:\
+                Controller_Mode_1_Key_##keyNum##_UpAction();\
+                break;\
+        }\
     }\
 }
 

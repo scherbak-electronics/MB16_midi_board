@@ -19,6 +19,7 @@
     Controller_Init();\
 	sei();\
 	ADC_startConversion();\
+    App_StartupEvent();\
 }
 
 /*
@@ -29,6 +30,7 @@
     System_ADC_Process();\
     System_Key_ScanFlagObserverProcess();\
     System_USART_RxProcess();\
+    System_EEPROM_Process();\
     MIDI_EventsProcess();\
     Controller_Process();\
     System_USART_TxProcess();\
@@ -84,6 +86,15 @@
 }
 
 /*
+ * Application startup event,
+ * Fires only once at startup.
+ */
+#define App_StartupEvent() {\
+    Controller_View_Animation_ShowRuningDot();\
+    Controller_Mode_DisableAllActions();\
+}
+
+/*
  * MIDI In message events 
  */
 #define App_MIDI_In_ExtSyncEvent() {\
@@ -98,8 +109,23 @@
     Controller_Sync_ExtStopPlayback();\
 }
 
-#define App_MIDI_In_NoteOnEvent(noteNum, velocity) {\
+#define App_MIDI_In_NoteOnEvent(noteNum, velo) {\
+    controller.mode.mode1.lastNoteNumber = noteNum;\
+    controller.notes.velocity = velo;\
+    if (Controller_Sequencer_isRecFlag()) {\
+        Controller_Sequencer_SetPatternStepData(\
+            Controller_Sequencer_GetEditPatternNumber(), \
+            Controller_Sequencer_GetEditStepNumber(), \
+            controller.mode.mode1.lastNoteNumber, \
+            controller.notes.velocity, \
+            controller.notes.gateTime\
+        );\
+        controller.mode.mode1.keyNote[(controller.mode.mode1.keyNoteCounter & 0b00000011)].number = controller.mode.mode1.lastNoteNumber;\
+        controller.mode.mode1.keyNoteCounter++;\
+    }\
+    Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
 }
 
 #define App_MIDI_In_NoteOffEvent(noteNum) {\
+    Controller_Notes_Off(noteNum);\
 }

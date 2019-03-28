@@ -74,6 +74,7 @@
 struct MIDI_MODULE {
     BYTE flags;
     struct MIDI_IN_MODULE in;
+    struct MIDI_OUT_MODULE out;
 };
 
 /*

@@ -17,7 +17,7 @@
 #                   default_serial = "avrdoper"
 # FUSES ........ Parameters for avrdude to flash the fuses appropriately.
 
-DEVICE     = atmega16
+DEVICE     = atmega32
 CLOCK      = 16000000
 PROGRAMMER = -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X
 OBJECTS    = main.o
@@ -49,7 +49,7 @@ FUSES      = -U hfuse:w:0xcf:m -U lfuse:w:0xff:m
 # Tune the lines below only if you know what you are doing:
 
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
-COMPILE = avr-gcc -Wall -Winline -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
+COMPILE = avr-gcc -w -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
 # symbolic targets:
 all:	main.hex
@@ -103,6 +103,10 @@ cpp:
 
 read:
 	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U hfuse:r:hfuse_dump.hex:i -U lfuse:r:lfuse_dump.hex:i -U flash:r:main_dump.hex:i
+
+read_eeprom:
+	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U eeprom:r:eeprom_dump.hex:i
+	hexdump -C -n1024 eeprom_dump.hex
 
 checkfuse:
 	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U hfuse:v:hfuse_dump.hex:i -U lfuse:v:lfuse_dump.hex:i

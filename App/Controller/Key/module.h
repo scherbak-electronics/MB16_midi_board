@@ -4,15 +4,31 @@
  * Keys Module
  * provides system keys to controller keys mapping and events handling. 
  */
-#define CONTROLLER_KEY_CFG_KEYS_COUNT       14
+#define CONTROLLER_KEY_CFG_KEYS_COUNT           14
+#define CONTROLLER_KEY_CFG_PLAY_KEYS_COUNT      4
 
 struct CONTROLLER_KEY_MODULE {
     BYTE mapping[CONTROLLER_KEY_CFG_KEYS_COUNT];
+    BYTE programChangeMapping[CONTROLLER_KEY_CFG_PLAY_KEYS_COUNT];
 };
 
 #define Controller_Key_isNoteNumber(keyNum)         bit_is_set(controller.key.mapping[keyNum], 7)
 #define Controller_Key_GetCCNumber(keyNum)          controller.key.mapping[keyNum]
-#define Controller_Key_GetNoteNumber(keyNum)        (controller.key.mapping[keyNum] & 0b01111111)
+#define Controller_Key_GetNoteNumber(keyNum)        (controller.key.mapping[keyNum] & 0b01111111) 
+
+/*
+ * Returns previously assigned program number
+ * for Program Change message. keyNum is zero based.
+ */
+#define Controller_Key_GetAssignedProgramNumber(keyNum)     controller.key.programChangeMapping[keyNum]
+
+/*
+ * Assign program number to one of play keys.
+ * keyNum values 0 - 3.
+ */
+#define Controller_Key_AssignProgramNumber(keyNum, progNum) {\
+    controller.key.programChangeMapping[keyNum] = progNum;\
+}
 
 /*
  * Map key to note number instead of controller number.
@@ -49,6 +65,10 @@ struct CONTROLLER_KEY_MODULE {
     Controller_Key_SetNoteNumber(11, MIDI_Notes_GetNoteNumber(MIDI_NOTE_C, 2));\
     Controller_Key_SetNoteNumber(12, MIDI_Notes_GetNoteNumber(MIDI_NOTE_C, 3));\
     Controller_Key_SetNoteNumber(13, MIDI_Notes_GetNoteNumber(MIDI_NOTE_C, 4));\
+    controller.key.programChangeMapping[0] = 0;\
+    controller.key.programChangeMapping[1] = 1;\
+    controller.key.programChangeMapping[2] = 2;\
+    controller.key.programChangeMapping[3] = 3;\
 }
 
 /*

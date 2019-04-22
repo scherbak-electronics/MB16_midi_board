@@ -14,6 +14,7 @@
 #define CONTROLLER_SEQUENCER_FLAG_REC                   2
 #define CONTROLLER_SEQUENCER_FLAG_OVERDUB               3
 #define CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY         4
+#define CONTROLLER_SEQUENCER_FLAG_EVEN_ODD              5
 
 #define CONTROLLER_SEQUENCER_CFG_PATTERN_LEN            16
 #define CONTROLLER_SEQUENCER_CFG_PATTERNS_COUNT          4
@@ -73,6 +74,12 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_setShuffleDelayFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
 #define Controller_Sequencer_clrShuffleDelayFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
 #define Controller_Sequencer_isShuffleDelayFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
+#define Controller_Sequencer_invShuffleDelayFlag()                                  inv_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY)
+
+#define Controller_Sequencer_setEvenOddFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
+#define Controller_Sequencer_clrEvenOddFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
+#define Controller_Sequencer_isEvenOddFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
+#define Controller_Sequencer_invEvenOddFlag()                                    inv_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
 
 
 #define Controller_Sequencer_SetEditPatternNumber(num)                      controller.sequencer.editPatternNumber = num
@@ -171,9 +178,16 @@ struct SEQUENCER_MODULE {
     if (Controller_Sequencer_isPlayingFlag()) {\
         if (controller.sequencer.clockDividerCounter > 5) {\
             controller.sequencer.clockDividerCounter = 0;\
+            Controller_Sequencer_invEvenOddFlag();\
         }\
-        if (controller.sequencer.clockDividerCounter == 0) {\
-            Controller_Sequencer_setStepTriggerFlag();\
+        if (!Controller_Sequencer_isEvenOddFlag()) {\
+            if (controller.sequencer.clockDividerCounter == 0) {\
+                Controller_Sequencer_setStepTriggerFlag();\
+            }\
+        } else {\
+            if (controller.sequencer.clockDividerCounter == controller.sequencer.shuffleTime) {\
+                Controller_Sequencer_setStepTriggerFlag();\
+            }\
         }\
         controller.sequencer.clockDividerCounter++;\
     }\
@@ -184,17 +198,6 @@ struct SEQUENCER_MODULE {
  */
 #define Controller_Sequencer_PlayProcess() {\
     if (Controller_Sequencer_isPlayingFlag()) {\
-        if (controller.sequencer.shuffleTime > 0) {\
-            /* check if we still stand on the last step just before begining of new pattern from step 0 */\
-            if (controller.sequencer.playStepNumber != (CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1)) {\
-                if ((controller.sequencer.playStepNumber + 2) % 2 == 0) {\
-                    if (!Controller_Sequencer_isShuffleDelayFlag()) {\
-                        Controller_Sequencer_SetShuffleDelayTimer();\
-                        Controller_Sequencer_clrStepTriggerFlag();\
-                    }\
-                }\
-            }\
-        }\
         if (Controller_Sequencer_isStepTriggerFlag()) {\
             Controller_Sequencer_clrStepTriggerFlag();\
             Controller_Sequencer_clrShuffleDelayFlag();\
@@ -334,6 +337,7 @@ struct SEQUENCER_MODULE {
  */
 #define Controller_Sequencer_ResetPlayPosition() {\
     controller.sequencer.playStepNumber = CONTROLLER_SEQUENCER_CFG_PATTERN_LEN - 1;\
+    Controller_Sequencer_clrEvenOddFlag();\
 }
 
 /*

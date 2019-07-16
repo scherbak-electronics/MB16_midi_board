@@ -1,7 +1,9 @@
 /*
- * SEQUENCER STRUCTURE / MIDI CHANNEL 1 - 16
+ * SEQUENCER STRUCTURE KNOB
  * 
- * Knob 7 action in mode number 1.
+ * Sequencer Structure select.
+ * MIDI Channel select 1 - 16
+ * Octave switch.
  */
 #define Controller_Mode_1_Knob_7_Action(knobVal) {\
     if (Controller_Mode_1_isFunctionFlag()) {\
@@ -10,12 +12,19 @@
         if (Controller_Mode_1_isShiftRightFlag()) {\
             Controller_Mode_1_Knob_7_OctaveSwitchAction(knobVal);\
         } else {\
-            controller.sequencer.structureNumber = (knobVal >> 4);\
-            if (controller.sequencer.structureNumber != controller.sequencer.structureNumberPrev) {\
-                controller.sequencer.structureNumberPrev = controller.sequencer.structureNumber;\
-                Controller_View_Param_Show(controller.sequencer.structureNumber);\
-            }\
+            Controller_Mode_1_Knob_7_SequencerStructureSelectAction(knobVal);\
         }\
+    }\
+}
+
+/*
+ * Sequencer Structure select action
+ */
+#define Controller_Mode_1_Knob_7_SequencerStructureSelectAction(knobVal) {\
+    controller.sequencer.structureNumber = (knobVal >> 4);\
+    if (controller.sequencer.structureNumber != controller.sequencer.structureNumberPrev) {\
+        controller.sequencer.structureNumberPrev = controller.sequencer.structureNumber;\
+        Controller_View_Param_Show(controller.sequencer.structureNumber);\
     }\
 }
 

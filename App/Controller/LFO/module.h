@@ -33,6 +33,7 @@ struct LFO_MODULE {
  * please make sure that rate value in the range 0 - 9.
  * LFO rate will be used to select one of the divider counters, 
  * and will be actually converted to divider counter number
+ * NOTE: Synchronisation events are supplied by Controller_Sync module divider timers.
  */
 #define Controller_LFO_SetRate(lfoRate) {\
     controller.lfo.rate = (lfoRate);\
@@ -40,6 +41,8 @@ struct LFO_MODULE {
 
 /*
  * LFO module main loop process.
+ * Checks one of Controller_Sync clock timers.
+ * NOTE: Synchronisation events are supplied by Controller_Sync module divider timers.
  */
 #define Controller_LFO_Process() {\
     if (Controller_LFO_isPlayingFlag()) {\
@@ -105,6 +108,7 @@ struct LFO_MODULE {
 
 /*
  * Checking clock divider counter flag by counter number.
+ * NOTE: Synchronisation events are supplied by Controller_Sync module divider timers.
  */
 #define Controller_LFO_IsClockEventFlag(counterNum) (bit_is_set(controller.sync.clockDividerCounters[counterNum].flags, CONTROLLER_LFO_FLAG_CLOCK_EVENT))
 

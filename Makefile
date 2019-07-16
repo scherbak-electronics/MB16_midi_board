@@ -102,17 +102,20 @@ cpp:
 	$(COMPILE) -E main.c
 
 read:
-	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U hfuse:r:hfuse_dump.hex:i -U lfuse:r:lfuse_dump.hex:i -U flash:r:main_dump.hex:i
+	avrdude $(PROGRAMMER) -p $(DEVICE) -U hfuse:r:hfuse_dump.hex:i -U lfuse:r:lfuse_dump.hex:i -U flash:r:main_dump.hex:i
 
 read_eeprom:
-	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U eeprom:r:eeprom_dump.hex:i
+	avrdude $(PROGRAMMER) -p $(DEVICE) -U eeprom:r:eeprom_dump.hex:i
 	hexdump -C -n1024 eeprom_dump.hex
 
 checkfuse:
-	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U hfuse:v:hfuse_dump.hex:i -U lfuse:v:lfuse_dump.hex:i
+	avrdude $(PROGRAMMER) -p $(DEVICE) -U hfuse:v:hfuse_dump.hex:i -U lfuse:v:lfuse_dump.hex:i
 
 write:
-	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) $(FUSES) -U flash:w:main.hex:i
+	avrdude $(PROGRAMMER) -p $(DEVICE) $(FUSES) -U flash:w:main.hex:i
 
 checkmain:
-	avrdude -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X -p $(DEVICE) -U flash:v:main.hex:i
+	avrdude $(PROGRAMMER) -p $(DEVICE) -U flash:v:main.hex:i
+
+checkmaindump:
+	avrdude $(PROGRAMMER) -p $(DEVICE) -U flash:v:main_dump.hex:i

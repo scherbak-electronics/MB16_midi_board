@@ -54,8 +54,9 @@ struct CONTROLLER_KEY_MODULE {
     controller.key.mapping[1] = 23;\
     controller.key.mapping[2] = 18;\
     controller.key.mapping[3] = 20;\
-    controller.key.mapping[4] = 19;\
-    /* Key 5 is used as mode selection key. */\
+    /* Key 4 is used as mapping changeing key. */\
+    controller.key.mapping[4] = 0;\
+    /* Key 5 is used as mode changeing key. */\
     controller.key.mapping[5] = 0;\
     controller.key.mapping[6] = 17;\
     controller.key.mapping[7] = 15;\
@@ -65,6 +66,32 @@ struct CONTROLLER_KEY_MODULE {
     Controller_Key_SetNoteNumber(11, MIDI_Notes_GetNoteNumber(MIDI_NOTE_C, 2));\
     Controller_Key_SetNoteNumber(12, MIDI_Notes_GetNoteNumber(MIDI_NOTE_C, 3));\
     Controller_Key_SetNoteNumber(13, MIDI_Notes_GetNoteNumber(MIDI_NOTE_C, 4));\
+    controller.key.programChangeMapping[0] = 0;\
+    controller.key.programChangeMapping[1] = 1;\
+    controller.key.programChangeMapping[2] = 2;\
+    controller.key.programChangeMapping[3] = 3;\
+}
+
+/*
+ * Keys alter mapping
+ */
+#define Controller_Key_SetAlterMapping() {\
+    controller.key.mapping[0] = 64;\
+    controller.key.mapping[1] = 65;\
+    controller.key.mapping[2] = 66;\
+    controller.key.mapping[3] = 67;\
+    /* Key 4 is used as mapping changeing key. */\
+    controller.key.mapping[4] = 0;\
+    /* Key 5 is used as mode changeing key. */\
+    controller.key.mapping[5] = 0;\
+    controller.key.mapping[6] = 91;\
+    controller.key.mapping[7] = 92;\
+    controller.key.mapping[8] = 93;\
+    controller.key.mapping[9] = 94;\
+    controller.key.mapping[10] = 85;\
+    controller.key.mapping[11] = 86;\
+    controller.key.mapping[12] = 87;\
+    controller.key.mapping[13] = 88;\
     controller.key.programChangeMapping[0] = 0;\
     controller.key.programChangeMapping[1] = 1;\
     controller.key.programChangeMapping[2] = 2;\

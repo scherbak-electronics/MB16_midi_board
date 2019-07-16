@@ -1,3 +1,4 @@
+#include "4_mapping_select.h"
 #include "5_mode_select.h"
 
 /*
@@ -29,13 +30,6 @@
         MIDI_Out_SendNoteOn(Controller_Key_GetNoteNumber(3), CONTROLLER_CFG_DEFAULT_VELOCITY);\
     } else {\
         MIDI_Out_SendControlChange(Controller_Key_GetCCNumber(3), 127);\
-    }\
-}
-#define Controller_Mode_0_Key_4_DownAction() {\
-    if (Controller_Key_isNoteNumber(4)) {\
-        MIDI_Out_SendNoteOn(Controller_Key_GetNoteNumber(4), CONTROLLER_CFG_DEFAULT_VELOCITY);\
-    } else {\
-        MIDI_Out_SendControlChange(Controller_Key_GetCCNumber(4), 127);\
     }\
 }
 
@@ -126,13 +120,6 @@
         MIDI_Out_SendNoteOff(Controller_Key_GetNoteNumber(3), 0);\
     } else {\
         MIDI_Out_SendControlChange(Controller_Key_GetCCNumber(3), 0);\
-    }\
-}
-#define Controller_Mode_0_Key_4_UpAction() {\
-    if (Controller_Key_isNoteNumber(4)) {\
-        MIDI_Out_SendNoteOff(Controller_Key_GetNoteNumber(4), 0);\
-    } else {\
-        MIDI_Out_SendControlChange(Controller_Key_GetCCNumber(4), 0);\
     }\
 }
 

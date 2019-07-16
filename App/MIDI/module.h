@@ -143,6 +143,9 @@ struct MIDI_MODULE {
         if (MIDI_STATUS_MASK_NOTE_OFF_MSG == MIDI_getStatusByte(midi.in.currentStatus)) {\
             App_MIDI_In_NoteOffEvent(midi.in.msgBuffer[midi.in.msgBufferReadPointer].data1);\
         }\
+        if (MIDI_STATUS_MASK_PITCH_MSG == MIDI_getStatusByte(midi.in.currentStatus)) {\
+            App_MIDI_In_PitchBendEvent(midi.in.msgBuffer[midi.in.msgBufferReadPointer].data1, midi.in.msgBuffer[midi.in.msgBufferReadPointer].data2);\
+        }\
         midi.in.msgBufferReadPointer++;\
         if (midi.in.msgBufferReadPointer == midi.in.msgBufferPointer) {\
             MIDI_In_ResetMsgBuffer();\

@@ -52,6 +52,21 @@ struct KNOB_MODULE {
 }
 
 /*
+ * Initialize alternatve mapping table
+ */
+#define Controller_Knob_SetAlterMapping() {\
+    controller.knob.mapping[0] = 25;\
+    controller.knob.mapping[1] = 26;\
+    controller.knob.mapping[2] = 27;\
+    controller.knob.mapping[3] = 28;\
+    controller.knob.mapping[4] = 13;\
+    controller.knob.mapping[5] = 70;\
+    controller.knob.mapping[6] = 71;\
+    controller.knob.mapping[7] = 72;\
+}
+
+
+/*
  * Module Main Process.
  */
 #define Controller_Knob_Process() {\

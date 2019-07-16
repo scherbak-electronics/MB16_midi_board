@@ -47,8 +47,8 @@ struct MIDI_OUT_MODULE {
 /*
  * Send Pitch Bend message
  */
-#define MIDI_Out_SendPitchBend(msb) {\
-    System_USART_Send3Bytes(MIDI_makeStatusByte(MIDI_STATUS_PITCH_BEND_MSG, midi.out.channel), 0, msb);\
+#define MIDI_Out_SendPitchBend(lsb, msb) {\
+    System_USART_Send3Bytes(MIDI_makeStatusByte(MIDI_STATUS_PITCH_BEND_MSG, midi.out.channel), lsb, msb);\
     System_Led_Blink(SYSTEM_LED_CFG_TX_LED_NUM);\
 }
 

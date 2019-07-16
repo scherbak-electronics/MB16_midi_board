@@ -123,9 +123,15 @@
         controller.mode.mode1.keyNote[(controller.mode.mode1.keyNoteCounter & 0b00000011)].number = controller.mode.mode1.lastNoteNumber;\
         controller.mode.mode1.keyNoteCounter++;\
     }\
-    Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime);\
+    /* Controller_Notes_On(controller.mode.mode1.lastNoteNumber, controller.notes.velocity, controller.notes.gateTime); */\
+    MIDI_Out_SendNoteOn(noteNum, velo);\
 }
 
 #define App_MIDI_In_NoteOffEvent(noteNum) {\
-    Controller_Notes_Off(noteNum);\
+    /* Controller_Notes_Off(noteNum); */\
+    MIDI_Out_SendNoteOff(noteNum, 0);\
+}
+
+#define App_MIDI_In_PitchBendEvent(lsb, msb) {\
+    MIDI_Out_SendPitchBend(lsb, msb);\
 }

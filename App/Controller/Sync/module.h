@@ -127,6 +127,8 @@ struct SYNC_MODULE {
 
 /*
  * Trig Divider Counter Process.
+ * NOTE: this is the mapping of actual rate to the value range 0 - 9.
+ * This value range represents clock divider timer number. 
  */
 #define Controller_Sync_ClockDividerCountersProcess() {\
     Controller_Sync_IncrementClockDividerCounter(0, CONTROLLER_SYNC_CFG_DIV_CNT_VAL_24);\

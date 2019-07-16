@@ -16,7 +16,7 @@
             Controller_Key_AssignProgramNumber(0, Controller_Program_GetLastUsedNumber());\
             Controller_Notes_On(controller.mode.mode1.lastNoteNumber, CONTROLLER_NOTES_CFG_DEFAULT_VELOCITY, CONTROLLER_NOTES_CFG_GATE_TIME_DEFAULT);\
         } else {\
-            /* play assigned prog */\
+            /* change the program to assigned */\
             MIDI_Out_SendProgramChange(Controller_Key_GetAssignedProgramNumber(0));\
         }\
     } else {\

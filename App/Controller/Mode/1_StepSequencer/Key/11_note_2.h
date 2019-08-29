@@ -2,6 +2,8 @@
  * Button N2 (note play key num 1)
  * Key number 11 up and down actions.
  * Play/Stop key note 2
+ * Load sequencer datab from EEPROM memory.
+ * Start/Stop trigger note LFO at rate 1.
  * NOTE: keyNote array has zero based index. 
  */
 
@@ -54,6 +56,7 @@
 /* 
  * Stop play key note 2.
  * sends note off MIDI message.
+ * Stop trig note LFO.
  */
 #define Controller_Mode_1_Key_11_UpAction() {\
     if (!Controller_Mode_1_isAltRightFlag()) {\

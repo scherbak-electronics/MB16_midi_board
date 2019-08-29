@@ -15,6 +15,7 @@
 #define CONTROLLER_SEQUENCER_FLAG_OVERDUB               3
 #define CONTROLLER_SEQUENCER_FLAG_SHUFFLE_DELAY         4
 #define CONTROLLER_SEQUENCER_FLAG_EVEN_ODD              5
+#define CONTROLLER_SEQUENCER_FLAG_STEP_CLEANING         6
 
 #define CONTROLLER_SEQUENCER_CFG_PATTERN_LEN            16
 #define CONTROLLER_SEQUENCER_CFG_PATTERNS_COUNT          4
@@ -66,6 +67,10 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_clrRecFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_REC)
 #define Controller_Sequencer_isRecFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_REC)
 
+#define Controller_Sequencer_setStepCleaningFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_CLEANING)
+#define Controller_Sequencer_clrStepCleaningFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_CLEANING)
+#define Controller_Sequencer_isStepCleaningFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_STEP_CLEANING)
+
 #define Controller_Sequencer_setOverdubFlag()                                   set_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
 #define Controller_Sequencer_clrOverdubFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
 #define Controller_Sequencer_isOverdubFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_OVERDUB)
@@ -80,7 +85,6 @@ struct SEQUENCER_MODULE {
 #define Controller_Sequencer_clrEvenOddFlag()                                   clr_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
 #define Controller_Sequencer_isEvenOddFlag()                                    bit_is_set(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
 #define Controller_Sequencer_invEvenOddFlag()                                    inv_bit(controller.sequencer.flags, CONTROLLER_SEQUENCER_FLAG_EVEN_ODD)
-
 
 #define Controller_Sequencer_SetEditPatternNumber(num)                      controller.sequencer.editPatternNumber = num
 #define Controller_Sequencer_GetEditPatternNumber()                         controller.sequencer.editPatternNumber
@@ -207,6 +211,12 @@ struct SEQUENCER_MODULE {
                 controller.sequencer.playStepNumber = 0;\
             }\
             /* System_Led_Blink(0); */\
+            if (Controller_Sequencer_isStepCleaningFlag()) {\
+                Controller_Sequencer_ClearStepData(\
+                    controller.sequencer.editPatternNumber,\
+                    controller.sequencer.playStepNumber\
+                );\
+            }\
             if (controller.sequencer.structureNumber > 0) {\
                 Controller_Sequencer_PlayStepInStructure();\
             } else {\

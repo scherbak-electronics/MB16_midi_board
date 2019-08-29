@@ -102,6 +102,7 @@ struct NOTES_MODULE {
         }\
         MIDI_Out_SendNoteOn(noteNum, velo);\
         controller.notes.singleNoteNumber = noteNum;\
+        Controller_Notes_AssignToKeysByNumber(noteNum);\
     }\
     controller.notes.singleNoteGateTimer = gate;\
 }
@@ -205,4 +206,12 @@ struct NOTES_MODULE {
     controller.notes.octaveNumber = octNum;\
 }
 
+/*
+ * Note assignment by number action.
+ * TODO: need to improve integrity.
+ */
+#define Controller_Notes_AssignToKeysByNumber(noteNum) {\
+    controller.mode.mode1.keyNote[(controller.mode.mode1.keyNoteCounter & 0b00000011)].number = noteNum;\
+    controller.mode.mode1.keyNoteCounter++;\
+}
 

@@ -21,6 +21,7 @@
                 Controller_Sequencer_GetEditPatternNumber(), \
                 Controller_Sequencer_GetEditStepNumber()\
             );\
+            Controller_Sequencer_setStepCleaningFlag();\
         } else {\
             if (Controller_Mode_1_isShiftRightFlag()) {\
                 Controller_LFO_SetRate(3);\
@@ -55,4 +56,5 @@
             MIDI_Out_SendNoteOff(controller.mode.mode1.keyNote[3].number, 0);\
         }\
     }\
+    Controller_Sequencer_clrStepCleaningFlag();\
 }

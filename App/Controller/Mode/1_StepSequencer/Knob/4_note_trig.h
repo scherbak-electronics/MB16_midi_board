@@ -14,7 +14,6 @@
         Controller_Notes_GetOctaveNoteNumber();\
     Controller_Mode_1_Knob_4_NoteTrigDefaultAction(knobVal);\
     /* Controller_Mode_1_Knob_4_NoteAssignmentAction(knobVal); */\
-    Controller_Mode_1_Knob_4_NoteAssignmentByNumberAction();\
     if (Controller_Sequencer_isRecFlag()) {\
         Controller_Mode_1_Knob_4_SequencerRecAction(knobVal);\
     }\
@@ -66,18 +65,8 @@
 }
 
 /*
- * Note assignment by number action.
- */
-#define Controller_Mode_1_Knob_4_NoteAssignmentByNumberAction() {\
-    if (controller.mode.mode1.lastNoteNumber != controller.mode.mode1.prevNoteNumber) {\
-        controller.mode.mode1.prevNoteNumber = controller.mode.mode1.lastNoteNumber;\
-        controller.mode.mode1.keyNote[(controller.mode.mode1.keyNoteCounter & 0b00000011)].number = controller.mode.mode1.lastNoteNumber;\
-        controller.mode.mode1.keyNoteCounter++;\
-    }\
-}
-
-/*
  * Sequencer record action
+ * When REC switch is on
  */
 #define Controller_Mode_1_Knob_4_SequencerRecAction(knobVal) {\
     Controller_Sequencer_SetPatternStepData(\

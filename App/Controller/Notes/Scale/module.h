@@ -44,10 +44,10 @@ struct NOTES_SCALE_MODULE {
  */
 #define Controller_Notes_Scale_LoadScaleByNumber(scaleNum) {\
     switch (scaleNum) {\
-        case 0:\
+        case 1:\
         Controller_Notes_Scale_LoadPhrygianDominant();\
         break;\
-        case 1:\
+        case 0:\
         Controller_Notes_Scale_LoadChromatic();\
         break;\
         case 2:\

@@ -138,7 +138,7 @@ struct SEQUENCER_MODULE {
     controller.sequencer.channels[2].patternNumber = 0xff;\
     controller.sequencer.channels[3].patternNumber = 0xff;\
     controller.sequencer.shuffleTimer = 0;\
-    controller.sequencer.shuffleTime = 2;\
+    controller.sequencer.shuffleTime = 0;\
     Controller_Sequencer_View_Init();\
     Controller_Sequencer_Notes_Init();\
 }
@@ -227,7 +227,7 @@ struct SEQUENCER_MODULE {
             }\
             if (Controller_Sequencer_isOverdubFlag()) {\
                 Controller_Sequencer_SetEditStepNumber(controller.sequencer.playStepNumber);\
-                if (Controller_View_CanShow()) {\
+                if (Controller_View_CanShow() && !Controller_View_isBusyFlag()) {\
                     Controller_Sequencer_View_Show();\
                 }\
             }\

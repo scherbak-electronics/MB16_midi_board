@@ -14,6 +14,8 @@
 #define CONTROLLER_SYNC_CFG_EXT_CLOCK_TIMEOUT        100
 #define CONTROLLER_SYNC_CFG_CLOCK_96_TIME            21
 #define CONTROLLER_SYNC_CFG_DEFAULT_TEMPO           120
+#define CONTROLLER_SYNC_CFG_CLK96_DEFAULT_TIME      20
+#define CONTROLLER_SYNC_CFG_TEMPO_ADJ_CONST         2000 /* tempo convert to time ms adj const */
 #define CONTROLLER_SYNC_CFG_MAX_DIV_COUNTERS        10
 #define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_2           1
 #define CONTROLLER_SYNC_CFG_DIV_CNT_VAL_3           2
@@ -75,7 +77,7 @@ struct SYNC_MODULE {
 #define Controller_Sync_Init() {\
     controller.sync.flags = 0;\
     controller.sync.tempo = CONTROLLER_SYNC_CFG_DEFAULT_TEMPO;\
-    controller.sync.clock96Time = 100;\
+    controller.sync.clock96Time = CONTROLLER_SYNC_CFG_CLK96_DEFAULT_TIME;\
     controller.sync.clock96Timer = controller.sync.clock96Time;\
     controller.sync.extClockTimeoutTimer = 0;\
     Controller_Sync_ResetDividerCounters();\
@@ -91,7 +93,10 @@ struct SYNC_MODULE {
 
 #define Controller_Sync_SetTempo(bpm) {\
     controller.sync.tempo = bpm;\
-    controller.sync.clock96Time = bpm;\
+    if (controller.sync.tempo < 10) {\
+        controller.sync.tempo = 10;\
+    }\
+    controller.sync.clock96Time = CONTROLLER_SYNC_CFG_TEMPO_ADJ_CONST / controller.sync.tempo;\
     controller.sync.clock96Timer = controller.sync.clock96Time;\
 }
 

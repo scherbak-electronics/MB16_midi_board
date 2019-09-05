@@ -19,6 +19,7 @@ struct SEQUENCER_NOTES_MODULE {
     BYTE velocity;
     BYTE gateTime;
     BYTE numberTmp;
+    BYTE baseNumberTmp;
 };
 
 #define Controller_Sequencer_Notes_setOnOffOrderFlag() set_bit(controller.sequencer.notes.flags, CONTROLLER_SEQUENCER_NOTES_FLAG_ON_OFF_ORDER)
@@ -30,6 +31,7 @@ struct SEQUENCER_NOTES_MODULE {
  */
 #define Controller_Sequencer_Notes_Init() {\
     controller.sequencer.notes.flags = 0;\
+    controller.sequencer.notes.baseNumberTmp = 0;\
     system.var = 0;\
     controller.sequencer.notes.velocity = CONTROLLER_SEQUENCER_NOTES_CFG_DEFAULT_VELOCITY;\
     controller.sequencer.notes.gateTime = CONTROLLER_SEQUENCER_NOTES_CFG_GATE_TIME_DEFAULT;\
@@ -82,20 +84,21 @@ struct SEQUENCER_NOTES_MODULE {
 }
 
 #define Controller_Sequencer_Notes_On(bufferIndex, noteNum, velo, gate) {\
+    controller.sequencer.notes.baseNumberTmp = noteNum + controller.mode.mode1.baseNoteNumber + Controller_Notes_GetOctaveNoteNumber();\
     if (gate > 1) {\
         controller.sequencer.notes.buffer[bufferIndex].gateTimer = gate;\
     }\
     if (controller.sequencer.notes.buffer[bufferIndex].number == CONTROLLER_SEQUENCER_NOTES_CFG_NOTE_OFF) {\
-        controller.sequencer.notes.buffer[bufferIndex].number = noteNum;\
-        MIDI_Out_SendNoteOn(noteNum, velo);\
+        controller.sequencer.notes.buffer[bufferIndex].number = controller.sequencer.notes.baseNumberTmp;\
+        MIDI_Out_SendNoteOn(controller.sequencer.notes.baseNumberTmp, velo);\
     } else {\
-        if (controller.sequencer.notes.buffer[bufferIndex].number != noteNum) {\
+        if (controller.sequencer.notes.buffer[bufferIndex].number != controller.sequencer.notes.baseNumberTmp) {\
             controller.sequencer.notes.numberTmp = controller.sequencer.notes.buffer[bufferIndex].number;\
             if (!Controller_Sequencer_Notes_isOnOffOrderFlag()) {\
                 MIDI_Out_SendNoteOff(controller.sequencer.notes.buffer[bufferIndex].number, 0);\
             }\
-            controller.sequencer.notes.buffer[bufferIndex].number = noteNum;\
-            MIDI_Out_SendNoteOn(noteNum, velo);\
+            controller.sequencer.notes.buffer[bufferIndex].number = controller.sequencer.notes.baseNumberTmp;\
+            MIDI_Out_SendNoteOn(controller.sequencer.notes.baseNumberTmp, velo);\
             if (Controller_Sequencer_Notes_isOnOffOrderFlag()) {\
                 MIDI_Out_SendNoteOff(controller.sequencer.notes.numberTmp, 0);\
             }\

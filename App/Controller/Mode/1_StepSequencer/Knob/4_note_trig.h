@@ -5,13 +5,12 @@
  */
 #define Controller_Mode_1_Knob_4_Action(knobVal) {\
     Controller_Knob_StartMeasureSpeed(CONTROLLER_KNOB_CFG_SPEED_TIMER_NUM_KNOB_4);\
-    controller.mode.mode1.lastNoteNumber = controller.mode.mode1.lastNoteNumber >> controller.mode.mode1.noteTrigResolution;\
-    controller.mode.mode1.lastNoteNumber = ((BYTE)(knobVal * controller.mode.mode1.trigNoteStep) & 0b01111111);\
+    controller.mode.mode1.knobValueTmp = ((BYTE)(knobVal * controller.mode.mode1.trigNoteStep) & 0b01111111);\
     controller.mode.mode1.lastNoteNumber = \
-        Controller_Notes_Scale_GetNote(controller.mode.mode1.lastNoteNumber) + \
-        controller.mode.mode1.lastNoteNumber + \
+        Controller_Notes_Scale_GetNote(controller.mode.mode1.knobValueTmp) + \
         controller.mode.mode1.baseNoteNumber + \
         Controller_Notes_GetOctaveNoteNumber();\
+    controller.mode.mode1.lastNoteNumber = controller.mode.mode1.lastNoteNumber & 0b01111111;\
     Controller_Mode_1_Knob_4_NoteTrigDefaultAction(knobVal);\
     /* Controller_Mode_1_Knob_4_NoteAssignmentAction(knobVal); */\
     if (Controller_Sequencer_isRecFlag()) {\

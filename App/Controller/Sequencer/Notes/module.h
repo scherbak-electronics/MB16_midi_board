@@ -84,7 +84,7 @@ struct SEQUENCER_NOTES_MODULE {
 }
 
 #define Controller_Sequencer_Notes_On(bufferIndex, noteNum, velo, gate) {\
-    controller.sequencer.notes.baseNumberTmp = noteNum + controller.mode.mode1.baseNoteNumber + Controller_Notes_GetOctaveNoteNumber();\
+    controller.sequencer.notes.baseNumberTmp = noteNum;\
     if (gate > 1) {\
         controller.sequencer.notes.buffer[bufferIndex].gateTimer = gate;\
     }\

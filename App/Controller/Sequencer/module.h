@@ -240,7 +240,7 @@ struct SEQUENCER_MODULE {
  */
 #define Controller_Sequencer_PlayStep(patt, stepNum) {\
     if (controller.sequencer.patterns[patt][stepNum].noteNumber != CONTROLLER_NOTES_CFG_NOTE_OFF) {\
-        controller.mode.mode1.lastNoteNumber = controller.sequencer.patterns[patt][stepNum].noteNumber;\
+        controller.mode.mode1.lastNoteNumber = controller.sequencer.patterns[patt][stepNum].noteNumber + controller.mode.mode1.baseNoteNumber + Controller_Notes_GetOctaveNoteNumber();\
         if (controller.sequencer.programNumber != controller.program.number) {\
             controller.sequencer.programNumber = controller.program.number;\
             MIDI_Out_SendProgramChange(controller.sequencer.programNumber);\

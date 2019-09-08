@@ -37,8 +37,9 @@
                     Controller_Memory_ReadPatternData();\
                 }\
             } else {\
-                MIDI_Out_SendNoteOn(controller.mode.mode1.keyNote[1].number, controller.notes.velocity);\
-                controller.mode.mode1.lastNoteNumber = controller.mode.mode1.keyNote[1].number;\
+                controller.mode.mode1.lastNoteNumber = controller.mode.mode1.keyNote[1].number + controller.mode.mode1.baseNoteNumber + Controller_Notes_GetOctaveNoteNumber();\
+                controller.mode.mode1.keyNote[1].actualNumber = controller.mode.mode1.lastNoteNumber;\
+                MIDI_Out_SendNoteOn(controller.mode.mode1.keyNote[1].actualNumber, controller.notes.velocity);\
                 if (Controller_Sequencer_isRecFlag()) {\
                     Controller_Sequencer_SetPatternStepData(\
                         Controller_Sequencer_GetEditPatternNumber(), \
@@ -65,7 +66,7 @@
                 Controller_LFO_Stop();\
             }\
         } else {\
-            MIDI_Out_SendNoteOff(controller.mode.mode1.keyNote[1].number, 0);\
+            MIDI_Out_SendNoteOff(controller.mode.mode1.keyNote[1].actualNumber, 0);\
         }\
     }\
 }

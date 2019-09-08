@@ -25,7 +25,7 @@ struct NOTES_MODULE {
     BYTE velocity;
     BYTE gateTime;
     struct NOTES_SCALE_MODULE scale;
-    BYTE octaveNumber;
+    int octaveNumber;
     BYTE noteNumberTmp;
     BYTE singleNoteNumber;
     BYTE singleNoteGateTimer;
@@ -37,7 +37,7 @@ struct NOTES_MODULE {
 #define Controller_Notes_Init() {\
     system.var = 0;\
     controller.notes.flags = 0;\
-    controller.notes.octaveNumber = 0;\
+    controller.notes.octaveNumber = 4;\
     controller.notes.noteNumberTmp = 0;\
     controller.notes.singleNoteNumber = 0;\
     controller.notes.singleNoteGateTimer = 0;\
@@ -197,13 +197,17 @@ struct NOTES_MODULE {
 /*
  * Calculates note C number for current octave.
  */
-#define Controller_Notes_GetOctaveNoteNumber()  (controller.notes.octaveNumber * 12)
+#define Controller_Notes_GetOctaveNoteNumber()  ((controller.notes.octaveNumber - 4) * 12)
 
 /*
  * Set octave number 0-9.
  */
 #define Controller_Notes_SetOctaveNumber(octNum) {\
-    controller.notes.octaveNumber = octNum;\
+    if (octNum == 0) {\
+        controller.notes.octaveNumber = 4;\
+    } else {\
+        controller.notes.octaveNumber = octNum;\
+    }\
 }
 
 /*

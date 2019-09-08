@@ -29,7 +29,8 @@
 #define CONTROLLER_MODE_1_CFG_NOTE_TRIG_RESOLUTION  0
 
 struct MODE_1_KEY_NOTE {
-    BYTE number;
+    BYTE number;            /* original assigned note number */
+    BYTE actualNumber;      /* note number calculated by adding base note and octave to assigned note number */
 };
 
 struct MODE_1_MODULE {
@@ -37,6 +38,7 @@ struct MODE_1_MODULE {
     BYTE lastNoteNumber;
     BYTE prevNoteNumber;
     BYTE baseNoteNumber;
+    BYTE knobValueTmp;
     struct MODE_1_KEY_NOTE keyNote[CONTROLLER_MODE_1_CFG_KEY_NOTES_COUNT];
     BYTE keyNoteCounter;
     BYTE trigNoteStep;

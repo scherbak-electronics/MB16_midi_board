@@ -18,7 +18,7 @@ struct NOTES_SCALE_MODULE {
 #define Controller_Notes_Scale_Init() {\
     controller.notes.scale.flags = 0;\
     controller.notes.scale.scaleNumber = 0;\
-    Controller_Notes_Scale_LoadPhrygianDominant();\
+    Controller_Notes_Scale_LoadChromatic();\
 }
 
 /*
@@ -37,7 +37,7 @@ struct NOTES_SCALE_MODULE {
  * Calculates note number by knob value.
  * Knob value will be trimmed to 0-8
  */
-#define Controller_Notes_Scale_GetNote(knobVal) controller.notes.scale.table[(knobVal % controller.notes.scale.scaleLen)]
+#define Controller_Notes_Scale_GetNote(knobVal) controller.notes.scale.table[(knobVal % controller.notes.scale.scaleLen)] + (12 * (BYTE)(knobVal / controller.notes.scale.scaleLen))
 
 /*
  * Load scale by number 0-3

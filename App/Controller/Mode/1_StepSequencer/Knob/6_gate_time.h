@@ -49,10 +49,10 @@
 }
 
 /*
- * Scale select action. 0-3
+ * Scale select action. 0-15
  */
 #define Controller_Mode_1_Knob_6_SelectScaleAction(knobVal) {\
-    controller.notes.scale.scaleNumber = knobVal >> 5;\
+    controller.notes.scale.scaleNumber = knobVal >> 3;\
     Controller_Notes_Scale_LoadScaleByNumber(controller.notes.scale.scaleNumber);\
     Controller_View_Param_Show(controller.notes.scale.scaleNumber);\
 }

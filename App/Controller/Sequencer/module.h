@@ -270,6 +270,9 @@ struct SEQUENCER_MODULE {
  */
 #define Controller_Sequencer_PlayStepInStructure() {\
     switch (controller.sequencer.structureNumber) {\
+        case 6:\
+        case 7:\
+        case 5:\
         case 4: /* One by one (all in series) structure */\
         if (controller.sequencer.playStepNumber == 0) {\
             if (controller.sequencer.playPatternNumber > (CONTROLLER_SEQUENCER_CFG_PATTERNS_COUNT - 2)) {\

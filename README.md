@@ -1,4 +1,4 @@
-<p align="center"><img src="readme_banner.png"></p>
+<p align="center"><img src="img/trMB16_banner_master.png"></p>
 
 
 

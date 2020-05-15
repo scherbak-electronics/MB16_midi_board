@@ -1,8 +1,9 @@
-<p align="center"><img src="readme_banner.png"></p>
+<p align="center"><img src="img/MB16C8145_banner_master.png"></p>
 
 
 
-## About MB16
+## About C8145 Aminoacid
 
-This is about building music electronic instruments using MIDI protocol.
+This is a Note Trigger Glitching MIDI Sequencer designed for live performances
+Creates awesome polyrhythm sequences easily by knobs turning 
 Full documentation will be available soon..

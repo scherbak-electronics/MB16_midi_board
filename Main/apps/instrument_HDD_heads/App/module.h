@@ -1,14 +1,11 @@
 /*
- * default App module
+ * instrument_HDD_heads App module
  * 
- * Default application example 
+ * Connects all other nested sub modules together
  * Defines GPIO ports mapping, events and action calls routing
  */
 #include "config.h"
-
-struct APP_MODULE {
-    BYTE flags;
-};
+#include "Instrument/module.h"
 
 /*
  * Application start up once, before main loop
@@ -17,6 +14,7 @@ struct APP_MODULE {
     cli();\
   	System_Init();\
   	MIDI_Init();\
+    Instrument_Init();\
 	sei();\
 	ADC_startConversion();\
 }
@@ -38,6 +36,7 @@ struct APP_MODULE {
  */
 #define App_System_Timer_1msProcessEvent() {\
     MIDI_In_TimeoutTimerProcess();\
+    Instrument_Osc_TimersProcess();\
 }
 
 #define App_System_Timer_5msProcessEvent() {\
@@ -59,39 +58,29 @@ struct APP_MODULE {
 
 /*
  * Key scan events
+ * Example module use Key actions
  */
 #define App_System_Key_ScanEvent() {\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, Instrument_KeyDownAction, Instrument_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, Instrument_KeyDownAction, Instrument_KeyUpAction);\
 }
 
 /*
  * MIDI In message events 
  */
 #define App_MIDI_In_ExtSyncEvent() {\
-    System_Led_Blink(0);\
 }
 
 #define App_MIDI_In_PlayEvent() {\
-    System_Led_Blink(0);\
 }
 
 #define App_MIDI_in_StopEvent() {\
-    System_Led_Blink(0);\
 }
 
 #define App_MIDI_In_NoteOnEvent(noteNum, velocity) {\
-    App_NoteOn(midi.in.msgBuffer[midi.in.msgBufferReadPointer].data1, midi.in.msgBuffer[midi.in.msgBufferReadPointer].data2);\
-    System_Led_Blink(1);\
+    Instrument_NoteOn(midi.in.msgBuffer[midi.in.msgBufferReadPointer].data1, midi.in.msgBuffer[midi.in.msgBufferReadPointer].data2);\
 }
 
 #define App_MIDI_In_NoteOffEvent(noteNum) {\
-    App_NoteOff(midi.in.msgBuffer[midi.in.msgBufferReadPointer].data1);\
-    System_Led_Blink(1);\
-}
-
-#define App_NoteOn(noteNum, velocity) {\
-}
-
-#define App_NoteOff(noteNum) {\
+    Instrument_NoteOff(midi.in.msgBuffer[midi.in.msgBufferReadPointer].data1);\
 }

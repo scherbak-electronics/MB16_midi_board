@@ -1,8 +1,8 @@
 /*
- * App_Control module
+ * Instrument_Control module
  * 
  * Instrument control logic.
  * Controlls all other instrument modules.
  */
-#define App_Control_Init() {\
+#define Instrument_Control_Init() {\
 }

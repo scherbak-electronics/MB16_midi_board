@@ -1,44 +1,45 @@
 /*
- * Instrument Module
+ * note_gates App Module
  */
+#include "config.h"
 #include "Control/module.h"
 #include "Osc/module.h"
 #include "Program/module.h"
 #include "Voice/module.h"
 #include "Gates/module.h"
 
-#define INSTRUMENT_CFG_MAX_POLYPHONY            8
+#define APP_CFG_MAX_POLYPHONY            8
 
-struct INSTRUMENT_MODULE {
+struct APP_MODULE {
     BYTE flags;
     struct VOICE_MODULE voice;
     struct OSC_MODULE osc;
     struct GATES_MODULE gates;
 };
 
-#define Instrument_Init() {\
+#define App_Init() {\
     instrument.flags = 0b00000000;\
-    Instrument_Voice_Init();\
-    Instrument_Osc_Init();\
-    Instrument_Program_Init();\
-    Instrument_Gates_Init();\
+    App_Voice_Init();\
+    App_Osc_Init();\
+    App_Program_Init();\
+    App_Gates_Init();\
 }
 
-#define Instrument_NoteOn(noteNum, velocity) {\
-    /* Instrument_Voice_NoteOn(noteNum, velocity); */\
-    Instrument_Gates_NoteOn(noteNum, velocity);\
+#define App_NoteOn(noteNum, velocity) {\
+    /* App_Voice_NoteOn(noteNum, velocity); */\
+    App_Gates_NoteOn(noteNum, velocity);\
 }
 
-#define Instrument_NoteOff(noteNum) {\
-    /* Instrument_Voice_NoteOff(noteNum); */\
-    Instrument_Gates_NoteOff(noteNum);\
+#define App_NoteOff(noteNum) {\
+    /* App_Voice_NoteOff(noteNum); */\
+    App_Gates_NoteOff(noteNum);\
 }
 
 /*
  * Key Events
  */
-#define Instrument_KeyDownEvent(keyNum) {\
+#define App_KeyDownEvent(keyNum) {\
 }
 
-#define Instrument_KeyUpEvent(keyNum) {\
+#define App_KeyUpEvent(keyNum) {\
 }

@@ -6,9 +6,9 @@
 #endif
 #include <avr/interrupt.h>
 #include <util/delay_basic.h>
-#include "lib/system_m16.h"
-#include "App/module.h"
+#include "Main/module.h"
 
+struct APP_MODULE app;
 struct SYSTEM_MODULE system;
 struct MIDI_MODULE midi;
 

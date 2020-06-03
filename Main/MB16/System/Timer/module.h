@@ -51,20 +51,20 @@ struct SYSTEM_TIMER_MODULE {
 #define System_Timer_Process() {\
 	if (System_Timer_0_isFlag1ms()) {\
 		System_Timer_0_clrFlag1ms();\
-        App_System_Timer_1msProcessEvent();\
+        Main_System_Timer_1msProcessEvent();\
 		System_Timer_1msProcessEvent();\
 	}\
 	if (System_Timer_0_isFlag5ms()) {\
 		System_Timer_0_clrFlag5ms();\
-		App_System_Timer_5msProcessEvent();\
+		Main_System_Timer_5msProcessEvent();\
 	}\
 	if (System_Timer_0_isFlag10ms()) {\
 		System_Timer_0_clrFlag10ms();\
-		App_System_Timer_10msProcessEvent();\
+		Main_System_Timer_10msProcessEvent();\
 	}\
 	if (System_Timer_0_isFlag100ms()) {\
 		System_Timer_0_clrFlag100ms();\
-		App_System_Timer_100msProcessEvent();\
+		Main_System_Timer_100msProcessEvent();\
 	}\
 }
 

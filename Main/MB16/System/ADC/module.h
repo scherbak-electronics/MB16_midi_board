@@ -37,7 +37,7 @@ struct SYSTEM_ADC_MODULE {
 	if(ADC_isConvertionEnd()){\
 		if(ADC_getResultLeft7Bit() != system.adc.buffer[system.adc.channel].level_1){\
 			if((ADC_getResultLeft7Bit() > system.adc.buffer[system.adc.channel].level_1 && system.adc.buffer[system.adc.channel].level_1 > system.adc.buffer[system.adc.channel].level_2) || (ADC_getResultLeft7Bit() < system.adc.buffer[system.adc.channel].level_1 && system.adc.buffer[system.adc.channel].level_1 < system.adc.buffer[system.adc.channel].level_2)){\
-                App_System_ADC_ValueChangeEvent(system.adc.channel, ADC_getResultLeft7Bit());\
+                Main_System_ADC_ValueChangeEvent(system.adc.channel, ADC_getResultLeft7Bit());\
                 system.adc.values[system.adc.channel] = ADC_getResultLeft7Bit();\
 			}\
 			system.adc.buffer[system.adc.channel].level_2 = system.adc.buffer[system.adc.channel].level_1;\

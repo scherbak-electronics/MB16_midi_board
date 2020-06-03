@@ -9,5 +9,7 @@
 // #include "apps/note_gates/App/module.h"
 // #include "apps/instrument_HDD_heads/App/module.h"
 // #include "apps/controller_C8145/App/module.h"
+// #include "apps/controller_C8145_eurorack/App/module.h"
+// #include "apps/instrument_city_12/App/module.h"
 #include "MB16/System/module.h"
 #include "MB16/MIDI/module.h"

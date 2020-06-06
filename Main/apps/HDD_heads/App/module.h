@@ -1,14 +1,20 @@
 /*
- * default App module
+ * instrument_HDD_heads App module
  * 
- * Default application example 
+ * Connects all other nested sub modules together
  * Defines GPIO ports mapping, events and action calls routing
  */
 #include "config.h"
-#include "UI/module.h"
+#include "Control/module.h"
+#include "Osc/module.h"
+#include "Program/module.h"
+#include "Voice/module.h"
+#include "Logic/module.h"
 
 struct APP_MODULE {
-    struct APP_UI_MODULE ui;
+    struct VOICE_MODULE voice;
+    struct OSC_MODULE osc;
+    struct APP_LOGIC_MODULE logic;
 };
 
 /*
@@ -18,6 +24,10 @@ struct APP_MODULE {
     cli();\
   	System_Init();\
   	MIDI_Init();\
+    App_Voice_Init();\
+    App_Osc_Init();\
+    App_Program_Init();\
+    App_Logic_Init();\
 	sei();\
 	ADC_startConversion();\
 }
@@ -38,6 +48,8 @@ struct APP_MODULE {
  * System software timer event
  */
 #define App_System_Timer_1msProcessEvent() {\
+    MIDI_In_TimeoutTimerProcess();\
+    App_Osc_TimersProcess();\
 }
 
 #define App_System_Timer_5msProcessEvent() {\
@@ -59,11 +71,11 @@ struct APP_MODULE {
 
 /*
  * Key scan events
+ * Example module use Key actions
  */
 #define App_System_Key_ScanEvent() {\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 2, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, App_Logic_KeyDownAction, App_Logic_KeyUpAction);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, App_Logic_KeyDownAction, App_Logic_KeyUpAction);\
 }
 
 /*
@@ -79,9 +91,11 @@ struct APP_MODULE {
 }
 
 #define App_MIDI_In_NoteOnEvent(noteNum, velocity) {\
+    App_Logic_NoteOn(noteNum, velocity);\
 }
 
 #define App_MIDI_In_NoteOffEvent(noteNum) {\
+    App_Logic_NoteOff(noteNum);\
 }
 
 #define App_MIDI_In_ControlChangeEvent(ctrlNum, ctrlValue) {\

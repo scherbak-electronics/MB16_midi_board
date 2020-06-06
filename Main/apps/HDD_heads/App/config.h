@@ -41,14 +41,14 @@
 #define SYSTEM_LED_1_CFG_PORT_OUT_BIT           4
 
 /*
- * Application specific PORT mapping
+ * PORT mapping by application usage
  */
-#define appGatesPortOut				    PORTC
-#define APP_GATES_0_CFG_PORT_OUT_BIT	    0
-#define APP_GATES_1_CFG_PORT_OUT_BIT	    1
-#define APP_GATES_2_CFG_PORT_OUT_BIT	    2
-#define APP_GATES_3_CFG_PORT_OUT_BIT	    3
-#define APP_GATES_4_CFG_PORT_OUT_BIT	    4
-#define APP_GATES_5_CFG_PORT_OUT_BIT	    5
-#define APP_GATES_6_CFG_PORT_OUT_BIT	    6
-#define APP_GATES_7_CFG_PORT_OUT_BIT	    7
+#define appOscPortOut				    PORTC
+#define APP_OSC_0_CFG_PORT_OUT_BIT	    0
+#define APP_OSC_1_CFG_PORT_OUT_BIT	    1
+#define APP_OSC_2_CFG_PORT_OUT_BIT	    2
+#define APP_OSC_3_CFG_PORT_OUT_BIT	    3
+#define APP_OSC_4_CFG_PORT_OUT_BIT	    4
+#define APP_OSC_5_CFG_PORT_OUT_BIT	    5
+#define APP_OSC_6_CFG_PORT_OUT_BIT	    6
+#define APP_OSC_7_CFG_PORT_OUT_BIT	    7

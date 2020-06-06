@@ -5,10 +5,12 @@
  * Defines GPIO ports mapping, events and action calls routing
  */
 #include "config.h"
-#include "UI/module.h"
+#include "Logic/module.h"
+#include "Gates/module.h"
 
 struct APP_MODULE {
-    struct APP_UI_MODULE ui;
+    struct APP_LOGIC_MODULE logic;
+    struct GATES_MODULE gates;
 };
 
 /*
@@ -18,6 +20,8 @@ struct APP_MODULE {
     cli();\
   	System_Init();\
   	MIDI_Init();\
+    App_Gates_Init();\
+    App_Logic_Init();\
 	sei();\
 	ADC_startConversion();\
 }
@@ -38,6 +42,7 @@ struct APP_MODULE {
  * System software timer event
  */
 #define App_System_Timer_1msProcessEvent() {\
+    App_Gates_TimersProcess();\
 }
 
 #define App_System_Timer_5msProcessEvent() {\
@@ -61,9 +66,7 @@ struct APP_MODULE {
  * Key scan events
  */
 #define App_System_Key_ScanEvent() {\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 1, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
-    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 2, App_UI_KeyDownEvent, App_UI_KeyUpEvent);\
+    System_Key_ScanByNum(systemKeyPortIn, system.key.states, 0, App_Logic_KeyDownEvent, App_Logic_KeyUpEvent);\
 }
 
 /*
@@ -79,6 +82,7 @@ struct APP_MODULE {
 }
 
 #define App_MIDI_In_NoteOnEvent(noteNum, velocity) {\
+    App_Logic_NoteOn(noteNum, velocity);\
 }
 
 #define App_MIDI_In_NoteOffEvent(noteNum) {\

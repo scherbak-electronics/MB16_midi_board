@@ -61,7 +61,7 @@ struct SYSTEM_KEY_MODULE {
 #define System_Key_ScanFlagObserverProcess(){\
 	if(System_Key_isFlagScan()){\
 		System_Key_clrFlagScan();\
-        Main_System_Key_ScanEvent();\
+        App_System_Key_ScanEvent();\
 	}\
 }
 

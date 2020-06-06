@@ -4,7 +4,7 @@
  * Converts note on/off messages to gate open/close signals
  * at GPIO outputs.
  */
-#define APP_GATES_CFG_MAX_POLYPHONY                      8
+#define APP_GATES_CFG_MAX_POLYPHONY                      12
 
 #define APP_GATES_FLAG_GATE_OPEN                         0
 
@@ -26,7 +26,6 @@ struct GATES_MODULE {
 
 #define App_Gates_Init() {\
     app.gates.flags = 0;\
-    app.gates.gateNumberTmp = 0;\
 }
 
 /* 
@@ -55,16 +54,24 @@ struct GATES_MODULE {
 
 /* 
  * Set GPIO port output pin to high level
- * Gate number is a port pin number
+ * Gate number will be converted to port pin number
  */
 #define App_Gates_OpenGateByNumber(gateNum) {\
-    set_bit(appGatesPortOut, gateNum);\
+    if (gateNum < 7) {\
+        set_bit(appGatesPortOut, gateNum);\
+    } else {\
+        set_bit(appGatesPortOut2, (gateNum - 4));\
+    }\
 }
 
 /* 
  * Set GPIO port output pin to low level
- * Gate number is a port pin number
+ * Gate number will be converted to port pin number
  */
 #define App_Gates_CloseGateByNumber(gateNum) {\
-    clr_bit(appGatesPortOut, gateNum);\
+    if (gateNum < 7) {\
+        clr_bit(appGatesPortOut, gateNum);\
+    } else {\
+        clr_bit(appGatesPortOut2, (gateNum - 4));\
+    }\
 }

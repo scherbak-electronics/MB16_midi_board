@@ -2,7 +2,7 @@
  * status LEDs module
  */
 #define SYSTEM_LED_CFG_BLINK_TIME           2
-#define SYSTEM_LED_CFG_MAX_LEDS             1
+#define SYSTEM_LED_CFG_MAX_LEDS             2
 #define SYSTEM_LED_FLAG_BLINK_DISABLED      0
 #define SYSTEM_LED_FLAG_BLINK_INVERTED      1
 #define SYSTEM_LED_CFG_TX_LED_NUM           0
@@ -18,6 +18,7 @@ struct SYSTEM_LED_MODULE {
 #define System_Led_Init() {\
     System_Led_Off(0);\
     system.led.blinkTimer[0] = 0;\
+    system.led.blinkTimer[1] = 0;\
     system.led.flags = 0;\
 }
 
@@ -25,7 +26,8 @@ struct SYSTEM_LED_MODULE {
  * Proess for all Led Timers
  */
 #define System_Led_TimersProcess() {\
-    System_Led_BlinkTimerProcess(SYSTEM_LED_CFG_TX_LED_NUM);\
+    System_Led_BlinkTimerProcess(0);\
+    System_Led_BlinkTimerProcess(1);\
 }
 
 /*

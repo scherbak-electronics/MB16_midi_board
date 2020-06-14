@@ -17,7 +17,7 @@
 #                   default_serial = "avrdoper"
 # FUSES ........ Parameters for avrdude to flash the fuses appropriately.
 
-DEVICE     = atmega32
+DEVICE     = atmega16
 CLOCK      = 16000000
 PROGRAMMER = -c avrispv2 -P /dev/cu.usbserial-FTSLSN7X
 OBJECTS    = main.o

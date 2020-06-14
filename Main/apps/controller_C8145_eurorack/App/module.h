@@ -4,9 +4,7 @@
  * Connects all other nested sub modules together
  * Defines GPIO ports mapping, events and action calls routing
  */
-#include "config.controller.C8145.h"
-#include "System/module.h"
-#include "MIDI/module.h"
+#include "config.h"
 #include "Controller/module.h"
 
 /*
@@ -134,4 +132,7 @@
 
 #define App_MIDI_In_PitchBendEvent(lsb, msb) {\
     MIDI_Out_SendPitchBend(lsb, msb);\
+}
+
+#define App_MIDI_In_ControlChangeEvent(ctrlNum, ctrlValue) {\
 }

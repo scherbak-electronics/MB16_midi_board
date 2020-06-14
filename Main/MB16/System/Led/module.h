@@ -1,10 +1,14 @@
 /*
  * status LEDs module
  */
-#define SYSTEM_LED_CFG_BLINK_TIME           4
-#define SYSTEM_LED_CFG_MAX_LEDS             2
+#define SYSTEM_LED_CFG_BLINK_TIME           2
+#define SYSTEM_LED_CFG_MAX_LEDS             1
+#define SYSTEM_LED_FLAG_BLINK_DISABLED      0
+#define SYSTEM_LED_FLAG_BLINK_INVERTED      1
+#define SYSTEM_LED_CFG_TX_LED_NUM           0
 
 struct SYSTEM_LED_MODULE {
+    BYTE flags;
     BYTE blinkTimer[SYSTEM_LED_CFG_MAX_LEDS];
 };
 
@@ -13,17 +17,15 @@ struct SYSTEM_LED_MODULE {
 
 #define System_Led_Init() {\
     System_Led_Off(0);\
-    System_Led_Off(1);\
     system.led.blinkTimer[0] = 0;\
-    system.led.blinkTimer[1] = 0;\
+    system.led.flags = 0;\
 }
 
 /*
  * Proess for all Led Timers
  */
 #define System_Led_TimersProcess() {\
-    System_Led_BlinkTimerProcess(0);\
-    System_Led_BlinkTimerProcess(1);\
+    System_Led_BlinkTimerProcess(SYSTEM_LED_CFG_TX_LED_NUM);\
 }
 
 /*
@@ -33,7 +35,11 @@ struct SYSTEM_LED_MODULE {
     if (system.led.blinkTimer[ledNum] != 0) {\
         system.led.blinkTimer[ledNum]--;\
         if (system.led.blinkTimer[ledNum] == 0) {\
-            System_Led_Off(ledNum);\
+            if (bit_is_set(system.led.flags, SYSTEM_LED_FLAG_BLINK_INVERTED)) {\
+                System_Led_On(ledNum);\
+            } else {\
+                System_Led_Off(ledNum);\
+            }\
         }\
     }\
 }
@@ -42,6 +48,14 @@ struct SYSTEM_LED_MODULE {
  * Blink Led to show activity
  */
 #define System_Led_Blink(ledNum) {\
-	System_Led_On(ledNum);\
-	system.led.blinkTimer[ledNum] = SYSTEM_LED_CFG_BLINK_TIME;\
+    if (!bit_is_set(system.led.flags, SYSTEM_LED_FLAG_BLINK_DISABLED)) {\
+        if (bit_is_set(systemLedPortOut, ledNum)) {\
+            System_Led_Off(ledNum);\
+            set_bit(system.led.flags, SYSTEM_LED_FLAG_BLINK_INVERTED);\
+        } else {\
+            System_Led_On(ledNum);\
+            clr_bit(system.led.flags, SYSTEM_LED_FLAG_BLINK_INVERTED);\
+        }\
+	    system.led.blinkTimer[ledNum] = SYSTEM_LED_CFG_BLINK_TIME;\
+    }\
 }

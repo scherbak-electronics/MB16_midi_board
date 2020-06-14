@@ -10,6 +10,7 @@
 #include "ADC/module.h"
 #include "USART/module.h"
 #include "Key/module.h"
+#include "EEPROM/module.h"
 
 /*
  * System config
@@ -22,6 +23,7 @@ struct SYSTEM_MODULE {
     struct SYSTEM_TIMER_MODULE timer;
     struct SYSTEM_USART_MODULE usart;
     struct SYSTEM_ADC_MODULE adc;
+    struct SYSTEM_EEPROM_MODULE eeprom;
 };
 
 /*
@@ -34,4 +36,5 @@ struct SYSTEM_MODULE {
     System_ADC_Init();\
     System_USART_Init();\
     System_Key_Init();\
+    System_EEPROM_Init();\
 }

@@ -1,8 +1,8 @@
 /*
  * MB16 MIDI board
  */
-#ifndef __AVR_ATmega16__
-	#define __AVR_ATmega16__
+#ifndef __AVR_ATmega32__
+	#define __AVR_ATmega32__
 #endif
 #include <avr/interrupt.h>
 #include <util/delay_basic.h>
@@ -10,7 +10,8 @@
 
 struct SYSTEM_MODULE system;
 struct MIDI_MODULE midi;
-struct APP_MODULE app;
+// struct APP_MODULE app;
+struct CONTROLLER_MODULE controller;
 
 /*
  * System_Timer_0 interrupt vector

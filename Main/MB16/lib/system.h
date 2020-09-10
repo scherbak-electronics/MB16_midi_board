@@ -10,8 +10,9 @@
 #define T0_CLK_64                               0x03
 #define T0_CLK_256                              0x04
 #define T0_CLK_1024                             0x05
-#define T0_VAL_CLK_256_10MHz_1ms                0xd9
-#define T0_VAL_CLK_256_16MHz_1ms                0xc2
+#define T0_VAL_CLK_256_10MHz_1ms                217
+#define T0_VAL_CLK_256_16MHz_1ms                194
+#define T0_VAL_CLK_64_16MHz_100us               231
 
 /*
  * ADC definitions

@@ -4,7 +4,7 @@
 #define USART_CFG_BITRATE                   USART_VAL_16MHz_31250bps
 #define USART_CFG_TX_BUFFER_SIZE            12
 #define USART_CFG_RX_BUFFER_SIZE            3
-#define USART_CFG_RX_TIMEOUT_TIME		    10
+#define USART_CFG_RX_TIMEOUT_TIME		    100
 
 /*
  * Status register flags

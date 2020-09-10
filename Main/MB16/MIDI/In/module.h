@@ -9,7 +9,7 @@
  */
 #define MIDI_IN_CFG_MESSAGE_BUFFER_SIZE                         4
 #define MIDI_IN_CFG_REALTIME_MESSAGE_BUFFER_SIZE                4
-#define MIDI_IN_CFG_TIMEOUT_TIME                                20
+#define MIDI_IN_CFG_TIMEOUT_TIME                                200
 
 /*
  * MIDI In Flags

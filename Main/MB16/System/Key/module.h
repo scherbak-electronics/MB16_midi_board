@@ -8,7 +8,7 @@
 /*
  * System Keys config
  */
-#define SYSTEM_KEY_SCAN_TIME          	5
+#define SYSTEM_KEY_SCAN_TIME          	50
 
 /*
  * Status flags

@@ -27,6 +27,7 @@ struct APP_MODULE {
     App_Osc_Init();\
 	sei();\
 	ADC_startConversion();\
+    System_Led_On(0);\
 }
 
 /*
@@ -96,6 +97,7 @@ struct APP_MODULE {
 
 #define App_MIDI_In_NoteOnEvent(noteNum, velocity) {\
     App_Logic_NoteOn(noteNum, velocity);\
+    System_Led_Blink(0);\
 }
 
 #define App_MIDI_In_NoteOffEvent(noteNum) {\

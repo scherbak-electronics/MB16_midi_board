@@ -14,6 +14,7 @@ struct OSC_DATA {
     BYTE noteNumber;
     WORD timer;
     WORD time;
+    WORD fallingEdgeTime;
 };
 
 struct OSC_MODULE {
@@ -36,6 +37,7 @@ struct OSC_MODULE {
         app.osc.oscillators[system.var].time = 0;\
         app.osc.oscillators[system.var].timer = 0;\
         app.osc.oscillators[system.var].noteNumber = 0xff;\
+        app.osc.oscillators[system.var].fallingEdgeTime = 0;\
     }\
     app.osc.noteFreqTable[0] = 306; /* C1 #24 */\
     app.osc.noteFreqTable[1] = 288;\
@@ -94,13 +96,14 @@ struct OSC_MODULE {
 }
 
 /* 
- * Assign note number to first available oscilator
+ * Assign note number to specified oscilator
  * Set oscilator timer
  */
 #define App_Osc_AssignNoteAndStartOsc(oscNum, noteNum) {\
     app.osc.oscillators[oscNum].noteNumber = noteNum;\
     app.osc.oscillators[oscNum].time = App_Osc_GetTimeByNote(app.osc.oscillators[oscNum].noteNumber);\
-    app.osc.oscillators[oscNum].timer = app.osc.oscillators[oscNum].time;\
+    app.osc.oscillators[oscNum].fallingEdgeTime = app.osc.oscillators[oscNum].time / 2;\
+    app.osc.oscillators[oscNum].timer = 0;\
     App_Osc_setFlagPlay(oscNum);\
 }
 
@@ -129,10 +132,13 @@ struct OSC_MODULE {
     for (; system.var < APP_OSC_CFG_MAX_POLYPHONY; system.var++) {\
         if (App_Osc_isFlagPlay(system.var)) {\
             if (app.osc.oscillators[system.var].timer != 0) {\
+                if (app.osc.oscillators[system.var].timer <= app.osc.oscillators[system.var].fallingEdgeTime) {\
+                    clr_bit(appOscPortOut, system.var);\
+                }\
                 app.osc.oscillators[system.var].timer--;\
             } else {\
                 app.osc.oscillators[system.var].timer = app.osc.oscillators[system.var].time;\
-                inv_bit(appOscPortOut, system.var);\
+                set_bit(appOscPortOut, system.var);\
             }\
         }\
     }\

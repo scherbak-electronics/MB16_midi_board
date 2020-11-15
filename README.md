@@ -1,4 +1,4 @@
-<p align="center"><img src="img/MB16_banner_app_stepper_osc.png"></p>
+<p align="center"><img src="Main/apps/stepper_osc/img/MB16_banner_app_stepper_osc.png"></p>
 
 
 

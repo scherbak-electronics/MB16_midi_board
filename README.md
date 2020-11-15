@@ -1,8 +1,7 @@
-<p align="center"><img src="img/MB16_banner_master.png"></p>
+<p align="center"><img src="img/MB16_banner_app_stepper_osc.png"></p>
 
 
 
-## About MB16
+## MB16 Stepper Osc
 
-This is about building music electronic instruments using MIDI protocol.
-Full documentation will be available soon..
+This firmware implements a generator that controls the rotation of the stepper motor so that the stepper motor plays a note. Stepper motor can be connected to MB16 using the L298 driver.

@@ -1,10 +1,12 @@
 /*
  * App_Osc module
  * 
- * Polyphonic square wave oscilator.
- * Generates audio signal at GPIO outputs.
+ * Polyphonic stepper motoir oscilator.
+ * implements a generator that controls the rotation of the stepper motor 
+ * so that the stepper motor plays a note. 
  */
-#define APP_OSC_CFG_MAX_POLYPHONY                      8
+#include "L298/module.h"
+#define APP_OSC_CFG_MAX_POLYPHONY                      1
 #define APP_OSC_CFG_NOTE_RANGE_LEN                      35
 
 #define APP_OSC_FLAG_PLAY                         0
@@ -15,6 +17,7 @@ struct OSC_DATA {
     WORD timer;
     WORD time;
     WORD fallingEdgeTime;
+    struct OSC_L298_DATA l298;
 };
 
 struct OSC_MODULE {
@@ -38,6 +41,11 @@ struct OSC_MODULE {
         app.osc.oscillators[system.var].timer = 0;\
         app.osc.oscillators[system.var].noteNumber = 0xff;\
         app.osc.oscillators[system.var].fallingEdgeTime = 0;\
+        app.osc.oscillators[system.var].l298.bipolarSequence[0] = 0b10000000;\
+        app.osc.oscillators[system.var].l298.bipolarSequence[1] = 0b01000000;\
+        app.osc.oscillators[system.var].l298.bipolarSequence[2] = 0b00100000;\
+        app.osc.oscillators[system.var].l298.bipolarSequence[3] = 0b00010000;\
+        app.osc.oscillators[system.var].l298.sequenceStepNumber = 0;\
     }\
     app.osc.noteFreqTable[0] = 306; /* C1 #24 */\
     app.osc.noteFreqTable[1] = 288;\
@@ -115,7 +123,7 @@ struct OSC_MODULE {
     system.var = 0;\
     for (; system.var < APP_OSC_CFG_MAX_POLYPHONY; system.var++) {\
         if (app.osc.oscillators[system.var].noteNumber == noteNum) {\
-            clr_bit(appOscPortOut, system.var);\
+            App_Osc_L298_SetPhase(system.var, 0);\
             App_Osc_clrFlagPlay(system.var);\
             app.osc.oscillators[system.var].noteNumber = 0xff;\
             break;\
@@ -133,12 +141,11 @@ struct OSC_MODULE {
         if (App_Osc_isFlagPlay(system.var)) {\
             if (app.osc.oscillators[system.var].timer != 0) {\
                 if (app.osc.oscillators[system.var].timer <= app.osc.oscillators[system.var].fallingEdgeTime) {\
-                    clr_bit(appOscPortOut, system.var);\
                 }\
                 app.osc.oscillators[system.var].timer--;\
             } else {\
                 app.osc.oscillators[system.var].timer = app.osc.oscillators[system.var].time;\
-                set_bit(appOscPortOut, system.var);\
+                App_Osc_L298_SetNextPhase(system.var);\
             }\
         }\
     }\

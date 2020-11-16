@@ -1,7 +1,7 @@
 /*
  * Port A config
  *///                                             76543210
-#define SYSTEM_PORT_CFG_DDRA                    0b00000000 // Direction: 0 = input, 1 = output
+#define SYSTEM_PORT_CFG_DDRA                    0b11111111 // Direction: 0 = input, 1 = output
 #define SYSTEM_PORT_CFG_PORTA                   0b00000000 // Resistor: 0 = none, 1 = pull-up
 
 /*
@@ -43,12 +43,14 @@
 /*
  * Application specific PORT mapping
  */
-#define appOscPortOut				    PORTC
-#define APP_OSC_0_CFG_PORT_OUT_BIT	    0
-#define APP_OSC_1_CFG_PORT_OUT_BIT	    1
-#define APP_OSC_2_CFG_PORT_OUT_BIT	    2
-#define APP_OSC_3_CFG_PORT_OUT_BIT	    3
-#define APP_OSC_4_CFG_PORT_OUT_BIT	    4
-#define APP_OSC_5_CFG_PORT_OUT_BIT	    5
-#define APP_OSC_6_CFG_PORT_OUT_BIT	    6
-#define APP_OSC_7_CFG_PORT_OUT_BIT	    7
+#define appOscL2980PortOut				    PORTC
+#define APP_OSC_L298_0A_CFG_PORT_OUT_BIT	    0
+#define APP_OSC_L298_0B_CFG_PORT_OUT_BIT	    1
+#define APP_OSC_L298_0C_CFG_PORT_OUT_BIT	    2
+#define APP_OSC_L298_0D_CFG_PORT_OUT_BIT	    3
+#define APP_OSC_L298_0E_CFG_PORT_OUT_BIT	    4
+#define APP_OSC_L298_0S0_CFG_PORT_OUT_BIT	    5
+#define APP_OSC_L298_0S1_CFG_PORT_OUT_BIT	    6
+#define APP_OSC_L298_____CFG_PORT_OUT_BIT	    7
+
+#define appOscL2981PortOut                  PORTA
